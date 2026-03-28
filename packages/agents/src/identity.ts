@@ -1,10 +1,13 @@
 // ERC-8004 identity helpers
 // Contracts: https://github.com/erc-8004/erc-8004-contracts
 //
-// We use Base Sepolia for development (testnet with deployed registries).
-// Switch to Base Mainnet for production.
+// Registration flow (per spec):
+//   1. register()            → mint agentId (no args)
+//   2. build agent card JSON with registrations[] containing the new agentId
+//   3. upload agent card to IPFS
+//   4. setAgentURI(agentId, ipfsURI)
 
-import { createPublicClient, createWalletClient, http, parseAbi } from "viem";
+import { createPublicClient, createWalletClient, http, parseAbi, parseEventLogs } from "viem";
 import { baseSepolia } from "viem/chains";
 import { privateKeyToAccount } from "viem/accounts";
 
@@ -17,10 +20,11 @@ export const ERC8004_CONTRACTS = {
 export const AGENT_REGISTRY_PREFIX = `eip155:${baseSepolia.id}:${ERC8004_CONTRACTS.identityRegistry}`;
 
 const IDENTITY_ABI = parseAbi([
-  "function register(address to, string agentURI) returns (uint256 agentId)",
-  "function setAgentURI(uint256 agentId, string agentURI) external",
+  "function register() external returns (uint256 agentId)",
+  "function setAgentURI(uint256 agentId, string newURI) external",
   "function tokenURI(uint256 tokenId) view returns (string)",
   "function ownerOf(uint256 tokenId) view returns (address)",
+  "event Registered(uint256 indexed agentId, string agentURI, address indexed owner)",
 ]);
 
 const REPUTATION_ABI = parseAbi([
@@ -48,29 +52,57 @@ function getPublicClient() {
 }
 
 /**
- * Register a new agent identity in the ERC-8004 IdentityRegistry.
- * Returns the minted agentId (tokenId).
+ * Step 1 of 2: Mint an agent identity on-chain.
+ * Returns the minted agentId and the tx hash.
+ * After this, build your agent card with the agentId, upload it, then call setAgentURI.
  */
-export async function registerAgentIdentity(agentURI: string): Promise<string> {
+export async function mintAgentIdentity(): Promise<{ agentId: string; txHash: string }> {
   const wallet = getWalletClient();
   const publicClient = getPublicClient();
-  const account = wallet.account;
 
   const hash = await wallet.writeContract({
     address: ERC8004_CONTRACTS.identityRegistry,
     abi: IDENTITY_ABI,
     functionName: "register",
-    args: [account.address, agentURI],
+    args: [],
   });
 
   const receipt = await publicClient.waitForTransactionReceipt({ hash });
 
-  // The agentId is emitted in the Transfer event (ERC-721 mint)
-  // tokenId is the last log topic for a standard ERC-721 Transfer
-  const transferLog = receipt.logs.at(-1);
-  if (!transferLog) throw new Error("No Transfer log in registration receipt");
+  // Parse the Registered event to get agentId
+  const logs = parseEventLogs({ abi: IDENTITY_ABI, logs: receipt.logs, eventName: "Registered" });
+  const agentId = logs[0]?.args.agentId?.toString();
+  if (!agentId) throw new Error("No Registered event found in receipt");
 
-  const agentId = BigInt(transferLog.topics[3] ?? "0x0").toString();
+  return { agentId, txHash: hash };
+}
+
+/**
+ * Step 2 of 2: Point the minted agent to its IPFS agent card.
+ * Call after uploading the card that contains registrations[].
+ */
+export async function setAgentURI(agentId: string, agentURI: string): Promise<string> {
+  const wallet = getWalletClient();
+  const publicClient = getPublicClient();
+
+  const hash = await wallet.writeContract({
+    address: ERC8004_CONTRACTS.identityRegistry,
+    abi: IDENTITY_ABI,
+    functionName: "setAgentURI",
+    args: [BigInt(agentId), agentURI],
+  });
+
+  await publicClient.waitForTransactionReceipt({ hash });
+  return hash;
+}
+
+/**
+ * Convenience wrapper: register() + upload card + setAgentURI() in one call.
+ * Returns the agentId and final tx hash.
+ */
+export async function registerAgentIdentity(agentURI: string): Promise<string> {
+  const { agentId } = await mintAgentIdentity();
+  await setAgentURI(agentId, agentURI);
   return agentId;
 }
 
