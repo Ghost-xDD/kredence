@@ -26,6 +26,7 @@ import { z } from "zod";
 import { nanoid } from "nanoid";
 import type {
   AdversarialLog,
+  AgentLogEntry,
   EvidenceBundle,
   FlaggedClaim,
   HypercertContributor,
@@ -315,7 +316,10 @@ export type SynthesisInput = {
   adversarialResult: AdversarialRunResult;
 };
 
-export async function runSynthesisAgent(input: SynthesisInput): Promise<SynthesisRunResult> {
+export async function runSynthesisAgent(
+  input: SynthesisInput,
+  onEntry?: (entry: AgentLogEntry) => void
+): Promise<SynthesisRunResult> {
   const identity = getSynthesisIdentity();
   const { evidenceResult, adversarialResult } = input;
   const projects = adversarialResult.projects;
@@ -446,7 +450,7 @@ export async function runSynthesisAgent(input: SynthesisInput): Promise<Synthesi
         confidence: withCid / Math.max(1, projects.length),
       };
     },
-    { maxDurationMs: 20 * 60 * 1000 }
+    { maxDurationMs: 20 * 60 * 1000, ...(onEntry !== undefined ? { onEntry } : {}) }
   );
 
   return output;

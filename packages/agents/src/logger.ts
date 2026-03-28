@@ -9,7 +9,10 @@ export class AgentLogger {
   constructor(
     private agentId: string,
     private agentRegistry: string,
-    private role: AgentRole
+    private role: AgentRole,
+    // Optional callback invoked synchronously for every log entry — used by
+    // the WebSocket server to stream events to connected clients in real time.
+    private onEntry?: (entry: AgentLogEntry) => void
   ) {
     this.runId = nanoid();
     this.startedAt = new Date().toISOString();
@@ -29,6 +32,7 @@ export class AgentLogger {
       ...(details ? { details } : {}),
     };
     this.entries.push(entry);
+    this.onEntry?.(entry);
 
     const prefix = `[${this.role.toUpperCase()}][${phase}]`;
     if (level === "error") {
@@ -60,6 +64,7 @@ export class AgentLogger {
           toolCall: { tool, input, output, durationMs },
         };
         this.entries.push(entry);
+        this.onEntry?.(entry);
         return output;
       })
       .catch((err: unknown) => {
@@ -73,6 +78,7 @@ export class AgentLogger {
           toolCall: { tool, input, durationMs, error },
         };
         this.entries.push(entry);
+        this.onEntry?.(entry);
         throw err;
       });
   }

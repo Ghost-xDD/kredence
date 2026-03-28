@@ -11,7 +11,7 @@
  *   3. Store AdversarialLog on Storacha, attach CID to ProjectRecord
  *   4. Update ProjectRecord with verifiedClaimCount, flaggedClaimCount, confidenceScore
  */
-import type { AdversarialLog, ProjectRecord } from "@credence/types";
+import type { AdversarialLog, AgentLogEntry, ProjectRecord } from "@credence/types";
 import type { EvidenceRunResult } from "../evidence/index.js";
 import { runAgent, type AgentContext } from "../runner.js";
 import { uploadJSON } from "@credence/storage";
@@ -126,7 +126,8 @@ export type AdversarialRunResult = {
 };
 
 export async function runAdversarialAgent(
-  evidenceResult: EvidenceRunResult
+  evidenceResult: EvidenceRunResult,
+  onEntry?: (entry: AgentLogEntry) => void
 ): Promise<AdversarialRunResult> {
   const identity = getAdversarialIdentity();
   const { projects: evidenceProjects, bundles } = evidenceResult;
@@ -226,7 +227,7 @@ export async function runAdversarialAgent(
         confidence: withCid / Math.max(1, evidenceProjects.length),
       };
     },
-    { maxDurationMs: 20 * 60 * 1000 }
+    { maxDurationMs: 20 * 60 * 1000, ...(onEntry !== undefined ? { onEntry } : {}) }
   );
 
   return output;
