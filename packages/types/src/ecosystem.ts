@@ -27,8 +27,17 @@ export type ManualURLList = {
   urls: string[];
 };
 
+export type GitHubRepo = {
+  kind: "github-repo";
+  /** Full GitHub repo URL, e.g. https://github.com/owner/repo */
+  repoUrl: string;
+  /** GitHub App installation ID — used for write-back after pipeline completes */
+  installationId?: number;
+};
+
 export type EcosystemInput =
   | DevspotHackathon
   | FilecoinDevGrants
   | ETHGlobalShowcase
-  | ManualURLList;
+  | ManualURLList
+  | GitHubRepo;

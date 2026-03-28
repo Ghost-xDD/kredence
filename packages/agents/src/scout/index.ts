@@ -140,6 +140,24 @@ export async function runScoutAgent(
           break;
         }
 
+        case "github-repo": {
+          // Single-repo input from the GitHub App webhook — no discovery needed.
+          const repoUrl = ecosystemInput.repoUrl.replace(/\.git$/, "").replace(/\/$/, "");
+          const match = repoUrl.match(/github\.com\/([^/]+)\/([^/]+)/);
+          const repoName = match ? `${match[1]}/${match[2]}` : repoUrl;
+          ctx.logger.log("info", "plan", "scout:adapter-github-repo", { repoUrl, repoName });
+          rawProjects = [
+            {
+              id: `github-${repoName.replace("/", "-")}`,
+              ecosystemKind: "github-repo",
+              name: repoName,
+              team: [],
+              sources: [{ type: "github" as const, url: repoUrl }],
+            },
+          ];
+          break;
+        }
+
         case "ethglobal": {
           ctx.logger.log("warn", "plan", "scout:adapter-ethglobal-not-implemented", {
             eventSlug: ecosystemInput.eventSlug,
