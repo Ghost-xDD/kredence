@@ -6,9 +6,13 @@
     "dev": "pnpm --filter web dev",
     "build": "pnpm --filter './packages/*' build && pnpm --filter web build",
     "lint": "pnpm -r lint",
-    "typecheck": "pnpm -r typecheck"
+    "typecheck": "pnpm -r typecheck",
+    "test:storacha": "pnpm build:packages && cd scripts && ../node_modules/.bin/tsx test-storacha.ts",
+    "build:packages": "pnpm --filter './packages/*' build"
   },
   "devDependencies": {
+    "dotenv": "^17.3.1",
+    "tsx": "^4.21.0",
     "typescript": "^5.4.5"
   }
 }
