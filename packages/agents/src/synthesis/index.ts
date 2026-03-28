@@ -40,6 +40,7 @@ import { runAgent } from "../runner.js";
 import { structuredLLMCall } from "../llm.js";
 import { uploadJSON } from "@credence/storage";
 import { getOperatorWallet } from "../identity.js";
+import { publishHypercert } from "../hypercerts/publish.js";
 
 const CONCURRENCY = 3;
 
@@ -378,11 +379,11 @@ export async function runSynthesisAgent(input: SynthesisInput): Promise<Synthesi
 
             // Store on Storacha
             ctx.logger.log("info", "submit", "synthesis:storing-payload", { id: project.id });
+            let updatedProject = project;
             try {
               const { cid } = await uploadJSON(payload, `hypercert-${project.id}.json`);
               payload.storachaRefs.hypercertPayloadCid = cid;
-              updatedProjects.push({ ...project, hypercertPayloadCid: cid, lastUpdated: new Date().toISOString() });
-              allPayloads.push(payload);
+              updatedProject = { ...project, hypercertPayloadCid: cid, lastUpdated: new Date().toISOString() };
               ctx.logger.log("info", "submit", "synthesis:payload-stored", {
                 id: project.id,
                 cid,
@@ -395,9 +396,34 @@ export async function runSynthesisAgent(input: SynthesisInput): Promise<Synthesi
                 id: project.id,
                 error: uploadErr instanceof Error ? uploadErr.message : String(uploadErr),
               });
-              updatedProjects.push(project);
-              allPayloads.push(payload);
             }
+
+            // Publish to Hypercerts ATProto network
+            ctx.logger.log("info", "submit", "synthesis:hypercerts-publish-start", { id: project.id });
+            try {
+              const atproto = await publishHypercert(payload);
+              if (atproto) {
+                payload.atproto = atproto;
+                ctx.logger.log("info", "submit", "synthesis:hypercerts-published", {
+                  id: project.id,
+                  activityUri: atproto.activityUri,
+                  hyperscanUrl: atproto.hyperscanUrl,
+                });
+              } else {
+                ctx.logger.log("warn", "submit", "synthesis:hypercerts-skipped", {
+                  id: project.id,
+                  reason: "HYPERCERTS_HANDLE or HYPERCERTS_APP_PASSWORD not set",
+                });
+              }
+            } catch (publishErr) {
+              ctx.logger.log("error", "submit", "synthesis:hypercerts-failed", {
+                id: project.id,
+                error: publishErr instanceof Error ? publishErr.message : String(publishErr),
+              });
+            }
+
+            updatedProjects.push(updatedProject);
+            allPayloads.push(payload);
           })
         )
       );

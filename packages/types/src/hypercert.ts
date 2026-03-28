@@ -67,5 +67,16 @@ export type HypercertPayload = {
     hypercertPayloadCid?: string;
   };
 
+  // ATProto / Hypercerts network references (populated after publish)
+  atproto?: {
+    activityUri: string;   // at://did:.../org.hypercerts.claim.activity/rkey
+    activityCid: string;
+    evaluationUri: string;
+    evaluationCid: string;
+    attachmentUri: string;
+    attachmentCid: string;
+    hyperscanUrl: string;  // https://www.hyperscan.dev/data?...
+  };
+
   generatedAt: string; // ISO timestamp
 };
