@@ -339,10 +339,13 @@ export async function runSynthesisAgent(
       const allPayloads: HypercertPayload[] = [];
 
       await Promise.all(
-        projects.map((project, i) =>
+        projects.map((project) =>
           sem(async () => {
-            const bundle = bundles[i];
-            const log = logs[i];
+            // Look up by projectId — NOT by index. All three arrays (projects,
+            // bundles, logs) are built from concurrent Promise.all so their
+            // completion order is non-deterministic; index correlation is wrong.
+            const bundle = bundles.find((b) => b.projectId === project.id);
+            const log    = logs.find((l) => l.projectId === project.id);
 
             if (!bundle || !log) {
               ctx.logger.log("warn", "plan", "synthesis:missing-inputs", { id: project.id });
