@@ -29,10 +29,13 @@ export type AdversarialLog = {
   verifiedCount: number;
   flaggedCount: number;
   unresolvedCount: number;
-  // Off-chain signing context — included so the log can be treated as an agent receipt
+  // Off-chain signing context — makes the log a verifiable agent receipt
+  // messageHash = keccak256 of canonical JSON of { projectId, entries }
+  // signature   = EIP-191 personal_sign of messageHash by signerAddress
   signatureContext: {
     method: "eip191" | "eip712";
     signerAddress: string;
     messageHash: string;
+    signature: string;
   } | null;
 };
