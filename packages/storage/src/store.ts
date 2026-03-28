@@ -25,9 +25,11 @@ export async function uploadJSON(
   const cid = await client.uploadFile(file);
   const cidStr = cid.toString();
 
+  // uploadFile returns a raw block CID (bafkrei…), not a directory CID.
+  // Raw block CIDs are served at the root URL with no filename path.
   return {
     cid: cidStr,
-    url: `https://${cidStr}.ipfs.storacha.link/${filename}`,
+    url: `https://${cidStr}.ipfs.storacha.link`,
   };
 }
 
@@ -43,13 +45,22 @@ export async function uploadText(
 
 /**
  * Retrieve a JSON artifact from Storacha by CID.
- * Uses the w3s.link public gateway.
+ * Uses the storacha.link public gateway.
+ *
+ * CID type determines URL shape:
+ *   - UnixFS directory CIDs (bafybei…): append filename path to navigate into the dir.
+ *   - Raw block CIDs (bafkrei…): access the root directly — no path component.
+ *     `client.uploadFile()` returns raw block CIDs, so the filename is irrelevant.
  */
 export async function retrieveJSON<T = unknown>(
   cid: string,
   filename = "data.json"
 ): Promise<T> {
-  const url = `https://${cid}.ipfs.storacha.link/${filename}`;
+  const isDirectory = cid.startsWith("bafybei");
+  const url = isDirectory
+    ? `https://${cid}.ipfs.storacha.link/${filename}`
+    : `https://${cid}.ipfs.storacha.link`;
+
   const res = await fetch(url);
 
   if (!res.ok) {
@@ -65,7 +76,10 @@ export async function retrieveJSON<T = unknown>(
  */
 export async function verifyCID(cid: string, filename = "data.json"): Promise<boolean> {
   try {
-    const url = `https://${cid}.ipfs.storacha.link/${filename}`;
+    const isDirectory = cid.startsWith("bafybei");
+    const url = isDirectory
+      ? `https://${cid}.ipfs.storacha.link/${filename}`
+      : `https://${cid}.ipfs.storacha.link`;
     const res = await fetch(url, { method: "HEAD" });
     return res.ok;
   } catch {
