@@ -15,4 +15,6 @@ export { runEvidenceAgent } from "./evidence/index.js";
 export type { EvidenceRunResult } from "./evidence/index.js";
 export { runAdversarialAgent } from "./adversarial/index.js";
 export type { AdversarialRunResult } from "./adversarial/index.js";
+export { runSynthesisAgent } from "./synthesis/index.js";
+export type { SynthesisRunResult, SynthesisInput } from "./synthesis/index.js";
 export type { AgentContext, AgentRunResult } from "./runner.js";
