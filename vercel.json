@@ -1,0 +1,5 @@
+{
+  "installCommand": "cd .. && pnpm install",
+  "buildCommand": "cd .. && pnpm build:packages && pnpm --filter web build",
+  "outputDirectory": ".next"
+}
