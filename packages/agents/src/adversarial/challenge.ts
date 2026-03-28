@@ -154,18 +154,30 @@ CHALLENGE TYPE GUIDE:
 • overclaim       — claimed scope or impact is disproportionate to observable activity (e.g. "thousands of users" with 0 GitHub stars)
 • dead-link       — a referenced URL is unreachable (HTTP 0 or non-200 status code)
 
-OUTCOME RULES:
-• verified     — at least one independently observable source (GitHub activity, live URL, onchain data) corroborates the claim
-• flagged      — the claim is contradicted by evidence, or a deployment/metric claim has no observable backing. objectionText is REQUIRED and must cite specific numbers or facts from the evidence.
-• unresolved   — the claim is plausible but cannot be confirmed or denied with available sources. objectionText is REQUIRED explaining what would be needed to verify.
+OUTCOME RULES — apply these strictly in order:
+• flagged     — use when ANY of these are true:
+    - The claim states specific numbers (users, transactions, dollar amounts, agents) that appear ONLY on the project's own website/README with no onchain or third-party verification. Large numbers (>100 users, >$1k) with no independent backing are always flagged.
+    - The claim says the project is "actively developed", "in active development", or implies ongoing work, but commits in the last 90 days = 0.
+    - The claim states a live deployed product but the website is unreachable (isLive=false).
+    - The claim attributes work to N contributors but GitHub shows a different number.
+    - objectionText REQUIRED — must cite specific numbers from the evidence (e.g. "GitHub shows 0 commits in 90 days", "1 star with no forks").
 
-CRITICAL RULES:
+• verified    — use ONLY when an independently observable source (GitHub activity count, live HTTP 200 URL, onchain bytecode) directly corroborates the specific claim.
+
+• unresolved  — use when the claim is technically possible but genuinely cannot be confirmed or denied (e.g. internal tech stack choices, design inspiration claims, future roadmap items). Do NOT use unresolved as a default — prefer flagged for metric claims and observable contradictions.
+    - objectionText REQUIRED — explain what specific evidence would be needed.
+
+MANDATORY FLAGGING TRIGGERS (if you see these, you MUST flag):
+1. Specific metric claims (users, transactions, dollar amounts) appearing only on own website/README → flagged as vague-metric or overclaim
+2. "Actively developed" / "ships regularly" with 0 commits/90d → flagged as overclaim  
+3. Contributor count claim mismatching GitHub data → flagged as attribution
+4. "Live demo at URL" where website isLive=false → flagged as dead-link
+5. Claims about team size that exceed the GitHub contributor list → flagged as attribution
+
+RULES:
 1. Every claimId in the input MUST appear exactly once in your output.
-2. Do NOT rubber-stamp self-reported claims as verified. isSelfReported=true means the claim comes from the project's own words — it requires independent corroboration to be verified.
-3. A claim like "actively developed" with 0 commits in 90 days should be flagged as overclaim.
-4. A website with isLive=false should cause any "live demo" claim to be flagged as dead-link or deployment.
-5. Contributor count claims must match GitHub's contributor list — not the team self-reported on the submission.
-6. objectionText must be a complete sentence citing specific numbers. "No evidence found" is not acceptable.`,
+2. objectionText must cite specific numbers or facts. "No evidence found" is not acceptable.
+3. Do NOT use unresolved for large metric claims — use flagged.`,
     user: `Project: ${project.name}${project.description ? `\nDescription: ${project.description}` : ""}
 
 ## Evidence
