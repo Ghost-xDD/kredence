@@ -11,4 +11,6 @@ export {
   AGENT_REGISTRY_PREFIX,
 } from "./identity.js";
 export { runScoutAgent, scoutTools } from "./scout/index.js";
+export { runEvidenceAgent } from "./evidence/index.js";
+export type { EvidenceRunResult } from "./evidence/index.js";
 export type { AgentContext, AgentRunResult } from "./runner.js";
