@@ -1,5 +1,6 @@
 /**
  * Entry point — loads .env, starts the HTTP + WebSocket server.
+ * Includes: IPNS registry, ATProto re-upload fix, CID gateway URL fix.
  */
 import { config } from "dotenv";
 import { resolve, dirname } from "path";
