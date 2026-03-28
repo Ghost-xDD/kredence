@@ -165,6 +165,64 @@ const STAGE_META = [
 
 const STAGE_AGENTS: Agent[] = ["scout", "evidence", "adversarial", "synthesis"];
 
+// ── Live Stats ─────────────────────────────────────────────────────────────
+
+type LiveStats = {
+  // Scout
+  scoutVisible: boolean;
+  pagesScraped: number;
+  projectsRaw: number;
+  projectsIndexed: number;
+  duplicatesRemoved: number;
+  manifestCid: string | null;
+  // Evidence
+  evidenceVisible: boolean;
+  evidenceProjectsDone: number;
+  claimsExtracted: number;
+  sourcesQueried: number;
+  // Adversarial
+  adversarialVisible: boolean;
+  adversarialVerified: number;
+  adversarialFlagged: number;
+  adversarialUnresolved: number;
+  avgConfidence: string | null;
+  // Synthesis
+  synthesisVisible: boolean;
+  hypercertsBuilt: number;
+  atprotoPublished: number;
+};
+
+const INITIAL_STATS: LiveStats = {
+  scoutVisible: false, pagesScraped: 0, projectsRaw: 0, projectsIndexed: 0,
+  duplicatesRemoved: 0, manifestCid: null,
+  evidenceVisible: false, evidenceProjectsDone: 0, claimsExtracted: 0, sourcesQueried: 0,
+  adversarialVisible: false, adversarialVerified: 0, adversarialFlagged: 0,
+  adversarialUnresolved: 0, avgConfidence: null,
+  synthesisVisible: false, hypercertsBuilt: 0, atprotoPublished: 0,
+};
+
+const STAT_TRIGGERS: Record<string, Partial<LiveStats>> = {
+  "s1":  { scoutVisible: true },
+  "s4":  { pagesScraped: 1, projectsRaw: 24 },
+  "s5":  { pagesScraped: 2, projectsRaw: 48 },
+  "s6":  { pagesScraped: 3, projectsRaw: 72 },
+  "s7":  { pagesScraped: 4, projectsRaw: 178 },
+  "s9":  { projectsIndexed: 174, duplicatesRemoved: 4 },
+  "s11": { manifestCid: "bafybeidqzm7..." },
+  "e0":  { evidenceVisible: true },
+  "e9":  { claimsExtracted: 9,  evidenceProjectsDone: 1, sourcesQueried: 3 },
+  "e17": { claimsExtracted: 19, evidenceProjectsDone: 2, sourcesQueried: 5 },
+  "e25": { claimsExtracted: 30, evidenceProjectsDone: 3, sourcesQueried: 8 },
+  "a0":  { adversarialVisible: true },
+  "a10": { adversarialVerified: 5,  adversarialFlagged: 4 },
+  "a16": { adversarialVerified: 12, adversarialFlagged: 6 },
+  "a22": { adversarialVerified: 21, adversarialFlagged: 7, adversarialUnresolved: 1, avgConfidence: "70%" },
+  "sy0": { synthesisVisible: true },
+  "sy6": { hypercertsBuilt: 1, atprotoPublished: 1 },
+  "sy11":{ hypercertsBuilt: 2, atprotoPublished: 2 },
+  "sy16":{ hypercertsBuilt: 3, atprotoPublished: 3 },
+};
+
 function formatElapsed(ms: number) {
   const s = Math.floor(ms / 1000);
   return `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
@@ -193,6 +251,10 @@ export default function PipelinePage() {
   const [handover, setHandover] = useState<{
     visible: boolean; from: string; to: string; detail?: string; exiting?: boolean;
   }>({ visible: false, from: "", to: "" });
+
+  // Live stats
+  const [stats, setStats]             = useState<LiveStats>(INITIAL_STATS);
+  const [flashedKeys, setFlashedKeys] = useState<Set<string>>(new Set());
 
   const feedRef     = useRef<HTMLDivElement>(null);
   const timerRef    = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -223,6 +285,8 @@ export default function PipelinePage() {
     setActiveAgent(null);
     setActiveAction("");
     setActiveTool(null);
+    setStats(INITIAL_STATS);
+    setFlashedKeys(new Set());
 
     const startMs = Date.now();
     timerRef.current = setInterval(() => setElapsedMs(Date.now() - startMs), 250);
@@ -230,6 +294,21 @@ export default function PipelinePage() {
     const touts = EVENTS.map((ev) =>
       setTimeout(() => {
         setEvents((prev) => [...prev, ev]);
+
+        // Update live stats when a trigger event fires
+        const statUpdate = STAT_TRIGGERS[ev.id];
+        if (statUpdate) {
+          setStats((prev) => ({ ...prev, ...statUpdate }));
+          const keys = Object.keys(statUpdate);
+          setFlashedKeys((fk) => new Set([...fk, ...keys]));
+          setTimeout(() => {
+            setFlashedKeys((fk) => {
+              const next = new Set(fk);
+              keys.forEach((k) => next.delete(k));
+              return next;
+            });
+          }, 900);
+        }
 
         if (ev.type === "handover") {
           const [from, to] = ev.message.split(" → ");
@@ -289,6 +368,8 @@ export default function PipelinePage() {
     setActiveAction("");
     setActiveTool(null);
     setHandover({ visible: false, from: "", to: "" });
+    setStats(INITIAL_STATS);
+    setFlashedKeys(new Set());
   }
 
   // Stage status helper
@@ -392,7 +473,11 @@ export default function PipelinePage() {
       {/* ── Running / Done layout ── */}
       {status !== "idle" && (
         <div className="flex-1 flex flex-col">
-          <div className="max-w-4xl mx-auto w-full px-5 sm:px-6">
+          <div className="max-w-5xl mx-auto w-full px-5 sm:px-6">
+          <div className="flex gap-6 items-start">
+
+          {/* ── Left: main column ── */}
+          <div className="flex-1 min-w-0">
 
             {/* ── Stage pills ── */}
             <div className="grid grid-cols-4 gap-2 pt-5 pb-4">
@@ -666,6 +751,99 @@ export default function PipelinePage() {
                 </div>
               </div>
             )}
+          </div>
+          {/* ── Right: stats panel ── */}
+          <div className="w-52 shrink-0 hidden sm:block pt-5 sticky top-6 self-start pb-10">
+            <div className="text-[10px] font-medium text-[#9ca3af] uppercase tracking-wider mb-4">Live Stats</div>
+
+            {/* Scout */}
+            {stats.scoutVisible && (
+              <div className="animate-agent-enter mb-5">
+                <div className="text-[10px] font-semibold text-[#0a0a0a] uppercase tracking-widest mb-2">Scout</div>
+                <div className="space-y-1.5">
+                  {[
+                    { label: "Pages scraped",    key: "pagesScraped",     val: stats.pagesScraped    || "—" },
+                    { label: "Projects raw",      key: "projectsRaw",      val: stats.projectsRaw     || "—" },
+                    { label: "Projects indexed",  key: "projectsIndexed",  val: stats.projectsIndexed || "—" },
+                    { label: "Duplicates removed",key: "duplicatesRemoved",val: stats.duplicatesRemoved || "—" },
+                    { label: "Manifest",          key: "manifestCid",      val: stats.manifestCid     || "—" },
+                  ].map(({ label, key, val }) => (
+                    <div key={key} className="flex items-baseline justify-between gap-2">
+                      <span className="text-[11px] text-[#9ca3af] leading-snug shrink-0">{label}</span>
+                      <span className={`text-[11px] font-mono tabular-nums truncate text-right transition-colors duration-500 ${
+                        flashedKeys.has(key) ? "text-[#0a0a0a] font-semibold" : "text-[#6b7280]"
+                      }`}>{val}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Evidence */}
+            {stats.evidenceVisible && (
+              <div className="animate-agent-enter mb-5">
+                <div className="text-[10px] font-semibold text-[#0a0a0a] uppercase tracking-widest mb-2">Evidence</div>
+                <div className="space-y-1.5">
+                  {[
+                    { label: "Processed",        key: "evidenceProjectsDone", val: stats.evidenceProjectsDone ? `${stats.evidenceProjectsDone}/3` : "—" },
+                    { label: "Claims extracted", key: "claimsExtracted",      val: stats.claimsExtracted      || "—" },
+                    { label: "Sources queried",  key: "sourcesQueried",        val: stats.sourcesQueried        || "—" },
+                  ].map(({ label, key, val }) => (
+                    <div key={key} className="flex items-baseline justify-between gap-2">
+                      <span className="text-[11px] text-[#9ca3af] leading-snug shrink-0">{label}</span>
+                      <span className={`text-[11px] font-mono tabular-nums transition-colors duration-500 ${
+                        flashedKeys.has(key) ? "text-[#0a0a0a] font-semibold" : "text-[#6b7280]"
+                      }`}>{val}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Adversarial */}
+            {stats.adversarialVisible && (
+              <div className="animate-agent-enter mb-5">
+                <div className="text-[10px] font-semibold text-[#0a0a0a] uppercase tracking-widest mb-2">Adversarial</div>
+                <div className="space-y-1.5">
+                  {[
+                    { label: "Verified",        key: "adversarialVerified",  val: stats.adversarialVerified   || "—" },
+                    { label: "Flagged",         key: "adversarialFlagged",   val: stats.adversarialFlagged    || "—" },
+                    { label: "Unresolved",      key: "adversarialUnresolved",val: stats.adversarialUnresolved || "—" },
+                    { label: "Avg confidence",  key: "avgConfidence",        val: stats.avgConfidence         || "—" },
+                  ].map(({ label, key, val }) => (
+                    <div key={key} className="flex items-baseline justify-between gap-2">
+                      <span className="text-[11px] text-[#9ca3af] leading-snug shrink-0">{label}</span>
+                      <span className={`text-[11px] font-mono tabular-nums transition-colors duration-500 ${
+                        flashedKeys.has(key) ? "text-[#0a0a0a] font-semibold" : "text-[#6b7280]"
+                      }`}>{val}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Synthesis */}
+            {stats.synthesisVisible && (
+              <div className="animate-agent-enter mb-5">
+                <div className="text-[10px] font-semibold text-[#0a0a0a] uppercase tracking-widest mb-2">Synthesis</div>
+                <div className="space-y-1.5">
+                  {[
+                    { label: "Hypercerts built", key: "hypercertsBuilt",   val: stats.hypercertsBuilt   ? `${stats.hypercertsBuilt}/3`   : "—" },
+                    { label: "ATProto published", key: "atprotoPublished", val: stats.atprotoPublished  ? `${stats.atprotoPublished}/3`  : "—" },
+                  ].map(({ label, key, val }) => (
+                    <div key={key} className="flex items-baseline justify-between gap-2">
+                      <span className="text-[11px] text-[#9ca3af] leading-snug shrink-0">{label}</span>
+                      <span className={`text-[11px] font-mono tabular-nums transition-colors duration-500 ${
+                        flashedKeys.has(key) ? "text-[#0a0a0a] font-semibold" : "text-[#6b7280]"
+                      }`}>{val}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          </div>{/* end flex row */}
           </div>
         </div>
       )}
