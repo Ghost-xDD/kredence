@@ -1,3 +1,4 @@
+import { Blob as NodeBlob, File as NodeFile } from "node:buffer";
 import { getStorachaClient } from "./client.js";
 
 export type UploadResult = {
@@ -15,10 +16,11 @@ export async function uploadJSON(
 ): Promise<UploadResult> {
   const client = await getStorachaClient();
 
-  const blob = new Blob([JSON.stringify(data, null, 2)], {
+  const blob = new NodeBlob([JSON.stringify(data, null, 2)], {
     type: "application/json",
   });
-  const file = new File([blob], filename);
+  // node:buffer File is runtime-compatible with BlobLike; cast to satisfy storacha types
+  const file = new NodeFile([blob], filename) as unknown as File;
 
   const cid = await client.uploadFile(file);
   const cidStr = cid.toString();

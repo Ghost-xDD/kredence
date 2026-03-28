@@ -1,19 +1,6 @@
 /**
  * Entry point — loads .env, starts the HTTP + WebSocket server.
  */
-
-// Polyfill File/Blob for Storacha (w3up-client) on Node <20.
-// Node 20+ exposes these as globals; this is a no-op there.
-import { Blob as NodeBlob, File as NodeFile } from "node:buffer";
-if (typeof globalThis.File === "undefined") {
-  // @ts-expect-error — polyfill for older Node runtimes
-  globalThis.File = NodeFile;
-}
-if (typeof globalThis.Blob === "undefined") {
-  // @ts-expect-error — polyfill for older Node runtimes
-  globalThis.Blob = NodeBlob;
-}
-
 import { config } from "dotenv";
 import { resolve, dirname } from "path";
 import { fileURLToPath } from "url";
