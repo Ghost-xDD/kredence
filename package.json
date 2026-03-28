@@ -10,7 +10,8 @@
     "test:storacha": "pnpm build:packages && cd scripts && ../node_modules/.bin/tsx test-storacha.ts",
     "build:packages": "pnpm --filter './packages/*' build",
     "test:scout": "pnpm build:packages && cd scripts && ../node_modules/.bin/tsx test-scout.ts",
-    "test:evidence": "pnpm build:packages && cd scripts && ../node_modules/.bin/tsx test-evidence.ts"
+    "test:evidence": "pnpm build:packages && cd scripts && ../node_modules/.bin/tsx test-evidence.ts",
+    "test:adversarial": "pnpm build:packages && cd scripts && ../node_modules/.bin/tsx test-adversarial.ts"
   },
   "devDependencies": {
     "dotenv": "^17.3.1",
