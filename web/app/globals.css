@@ -29,3 +29,10 @@ body {
   color: var(--foreground);
   font-family: var(--font-geist-sans), system-ui, sans-serif;
 }
+
+.dot-grid {
+  background-image: radial-gradient(circle, #e5e7eb 1px, transparent 1px);
+  background-size: 28px 28px;
+  mask-image: radial-gradient(ellipse 80% 75% at 50% 0%, black 10%, transparent 100%);
+  -webkit-mask-image: radial-gradient(ellipse 80% 75% at 50% 0%, black 10%, transparent 100%);
+}

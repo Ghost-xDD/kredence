@@ -100,20 +100,14 @@ const RECENT = [
   },
 ];
 
-function ConfidenceBar({ value }: { value: number }) {
-  const color = value >= 70 ? "#16a34a" : value >= 40 ? "#d97706" : "#dc2626";
-  return (
-    <div className="flex items-center gap-2">
-      <div className="w-16 h-1 rounded-full bg-[#e5e7eb] overflow-hidden">
-        <div
-          className="h-full rounded-full transition-all"
-          style={{ width: `${value}%`, backgroundColor: color }}
-        />
-      </div>
-      <span className="text-xs tabular-nums text-[#6b7280]">{value}%</span>
-    </div>
-  );
-}
+const STATS = [
+  { value: "178", label: "Projects evaluated" },
+  { value: "1,602", label: "Claims extracted" },
+  { value: "341", label: "Claims flagged" },
+  { value: "178", label: "Hypercerts published" },
+];
+
+
 
 export default function Home() {
   return (
@@ -121,78 +115,76 @@ export default function Home() {
       <Nav />
 
       {/* ── Hero ──────────────────────────────────────────────── */}
-      <section className="max-w-4xl mx-auto w-full px-6 pt-24 pb-20 text-center">
-        {/* Pipeline breadcrumb */}
-        <div className="inline-flex items-center gap-1.5 text-xs text-[#6b7280] mb-6 font-mono">
-          <span>Scout</span>
-          <span className="text-[#d1d5db]">→</span>
-          <span>Evidence</span>
-          <span className="text-[#d1d5db]">→</span>
-          <span>Adversarial</span>
-          <span className="text-[#d1d5db]">→</span>
-          <span>Synthesis</span>
-        </div>
+      <section className="relative overflow-hidden">
+        {/* Dot grid background */}
+        <div className="dot-grid absolute inset-0 pointer-events-none" aria-hidden />
 
-        <h1 className="text-[3rem] font-semibold tracking-tight text-[#0a0a0a] leading-[1.1] mb-5">
-          Evaluate Impact.<br />Autonomously.
-        </h1>
-        <p className="text-[#6b7280] text-[0.9375rem] max-w-md mx-auto mb-10 leading-relaxed">
-          Four autonomous agents that collect evidence, challenge claims, and
-          publish verifiable hypercerts for any project ecosystem.
-        </p>
+        <div className="relative max-w-4xl mx-auto w-full px-6 pt-28 pb-24 text-center">
+          {/* Headline */}
+          <h1 className="text-[4.5rem] font-semibold tracking-[-0.03em] text-[#0a0a0a] leading-[1.05] mb-6">
+            Evaluate Impact.<br />
+            <span className="text-[#c8cacf]">Autonomously.</span>
+          </h1>
 
-        {/* Input */}
-        <div className="max-w-lg mx-auto mb-4">
-          <div className="flex items-center border border-[#e5e7eb] rounded-xl bg-white shadow-[0_2px_8px_rgba(0,0,0,0.06)] px-4 py-3 gap-3">
-            <svg width="15" height="15" viewBox="0 0 15 15" fill="none" className="text-[#9ca3af] shrink-0">
-              <circle cx="6.5" cy="6.5" r="5" stroke="currentColor" strokeWidth="1.4" />
-              <path d="M10.5 10.5L13.5 13.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
-            </svg>
-            <input
-              type="text"
-              placeholder="Paste a hackathon URL, grant page, or ecosystem link…"
-              className="flex-1 text-sm outline-none text-[#0a0a0a] placeholder:text-[#9ca3af] bg-transparent"
-            />
-            <button className="text-xs font-medium bg-[#0a0a0a] text-white px-3.5 py-1.5 rounded-lg hover:bg-[#1f2937] transition-colors shrink-0">
-              Evaluate
-            </button>
-          </div>
-        </div>
+          <p className="text-[#6b7280] text-[0.9375rem] max-w-sm mx-auto mb-10 leading-relaxed">
+            Four autonomous agents that collect evidence, challenge claims, and
+            publish verifiable hypercerts for any project ecosystem.
+          </p>
 
-        {/* Chips */}
-        <div className="flex flex-wrap justify-center gap-2">
-          {["PL Genesis Hackathon", "Filecoin Dev Grants", "ETHGlobal", "Manual URL list"].map((e) => (
-            <button
-              key={e}
-              className="text-xs px-3 py-1 rounded-full bg-[#f3f4f6] text-[#374151] hover:bg-[#e5e7eb] transition-colors"
-            >
-              {e}
-            </button>
-          ))}
-        </div>
-
-        {/* Inline stats */}
-        <div className="flex flex-wrap justify-center gap-8 mt-12 text-center">
-          {[
-            { value: "178", label: "Projects evaluated" },
-            { value: "1,602", label: "Claims extracted" },
-            { value: "341", label: "Claims flagged" },
-            { value: "178", label: "Hypercerts published" },
-          ].map((s) => (
-            <div key={s.label}>
-              <div className="text-2xl font-semibold text-[#0a0a0a] tabular-nums">{s.value}</div>
-              <div className="text-xs text-[#9ca3af] mt-0.5">{s.label}</div>
+          {/* Input */}
+          <div className="max-w-lg mx-auto mb-4">
+            <div className="flex items-center border border-[#e5e7eb] rounded-xl bg-white shadow-[0_4px_20px_rgba(0,0,0,0.08)] px-4 py-3.5 gap-3">
+              <svg width="15" height="15" viewBox="0 0 15 15" fill="none" className="text-[#9ca3af] shrink-0">
+                <circle cx="6.5" cy="6.5" r="5" stroke="currentColor" strokeWidth="1.4" />
+                <path d="M10.5 10.5L13.5 13.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+              </svg>
+              <input
+                type="text"
+                placeholder="Paste a hackathon URL, grant page, or ecosystem link…"
+                className="flex-1 text-sm outline-none text-[#0a0a0a] placeholder:text-[#9ca3af] bg-transparent"
+              />
+              <button className="text-xs font-medium bg-[#0a0a0a] text-white px-3.5 py-1.5 rounded-lg hover:bg-[#1f2937] transition-colors shrink-0">
+                Evaluate
+              </button>
             </div>
-          ))}
+          </div>
+
+          {/* Chips */}
+          <div className="flex flex-wrap justify-center gap-2 mb-14">
+            {["PL Genesis Hackathon", "Filecoin Dev Grants", "ETHGlobal", "Manual URL list"].map((e) => (
+              <button
+                key={e}
+                className="text-xs px-3 py-1 rounded-full bg-white border border-[#e5e7eb] text-[#374151] hover:border-[#d1d5db] hover:shadow-sm transition-all"
+              >
+                {e}
+              </button>
+            ))}
+          </div>
+
+          {/* Stats — unified card */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 border border-[#e5e7eb] rounded-2xl overflow-hidden bg-white shadow-[0_1px_6px_rgba(0,0,0,0.05)] divide-x divide-y sm:divide-y-0 divide-[#e5e7eb]">
+            {STATS.map((s) => (
+              <div key={s.label} className="px-4 py-5 text-center">
+                <div className="text-2xl font-semibold text-[#0a0a0a] tabular-nums">{s.value}</div>
+                <div className="text-[11px] text-[#9ca3af] mt-0.5">{s.label}</div>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
       {/* ── Pipeline ──────────────────────────────────────────── */}
-      <section className="border-t border-[#e5e7eb]">
-        <div className="max-w-4xl mx-auto px-6 py-14">
+      <section className="border-b border-[#e5e7eb]">
+        <div className="max-w-4xl mx-auto px-6 pb-14">
           <div className="flex items-center justify-between mb-8">
             <div>
-              <h2 className="text-sm font-semibold text-[#0a0a0a]">The Pipeline</h2>
+              <h2 className="text-sm font-semibold text-[#0a0a0a] flex items-center gap-2">
+                The Pipeline
+                <span className="inline-flex items-center gap-1.5 text-[10px] font-mono text-[#16a34a] bg-[#f0fdf4] border border-[#dcfce7] rounded-full px-2 py-0.5">
+                  <span className="w-1 h-1 rounded-full bg-[#16a34a] animate-pulse" />
+                  live
+                </span>
+              </h2>
               <p className="text-xs text-[#9ca3af] mt-0.5">Four agents, fully autonomous</p>
             </div>
             <Link href="/agents" className="text-xs text-[#6b7280] hover:text-[#0a0a0a] transition-colors">
@@ -205,9 +197,17 @@ export default function Home() {
               <Link
                 key={s.name}
                 href={`/agents/${s.name.toLowerCase()}`}
-                className="group relative border border-[#e5e7eb] rounded-xl p-5 hover:border-[#d1d5db] hover:shadow-[0_2px_8px_rgba(0,0,0,0.05)] transition-all bg-white"
+                className="group relative border border-[#e5e7eb] rounded-xl p-5 hover:border-[#c8cacf] hover:shadow-[0_4px_20px_rgba(0,0,0,0.07)] hover:-translate-y-0.5 transition-all bg-white overflow-hidden"
               >
-                {/* Step number */}
+                {/* Ghost step number watermark */}
+                <span
+                  className="absolute right-4 bottom-2 text-[4.5rem] font-semibold text-[#f3f4f6] tabular-nums leading-none select-none pointer-events-none"
+                  aria-hidden
+                >
+                  {s.step}
+                </span>
+
+                {/* Header */}
                 <div className="flex items-start justify-between mb-4">
                   <span className="text-[10px] font-mono text-[#9ca3af]">{s.step}</span>
                   <div className="w-8 h-8 rounded-lg bg-[#f3f4f6] flex items-center justify-center text-[#374151] group-hover:bg-[#e5e7eb] transition-colors">
@@ -222,10 +222,10 @@ export default function Home() {
                 </div>
 
                 {/* Description */}
-                <p className="text-xs text-[#6b7280] leading-relaxed mb-4">{s.description}</p>
+                <p className="text-xs text-[#6b7280] leading-relaxed mb-4 relative">{s.description}</p>
 
                 {/* Detail chip */}
-                <div className="inline-flex items-center gap-1.5 text-[10px] font-mono text-[#9ca3af] bg-[#f9fafb] rounded-md px-2 py-1 border border-[#f3f4f6]">
+                <div className="inline-flex items-center gap-1.5 text-[10px] font-mono text-[#9ca3af] bg-[#f9fafb] rounded-md px-2 py-1 border border-[#f3f4f6] relative">
                   <span className="w-1.5 h-1.5 rounded-full bg-[#d1d5db] shrink-0" />
                   {s.detail}
                 </div>
@@ -236,11 +236,14 @@ export default function Home() {
       </section>
 
       {/* ── Recent Hypercerts ─────────────────────────────────── */}
-      <section className="border-t border-[#e5e7eb]">
+      <section>
         <div className="max-w-4xl mx-auto px-6 py-14">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h2 className="text-sm font-semibold text-[#0a0a0a]">Recent Hypercerts</h2>
+              <h2 className="text-sm font-semibold text-[#0a0a0a] flex items-center gap-2">
+                Recent Hypercerts
+                <span className="w-1.5 h-1.5 rounded-full bg-[#16a34a] animate-pulse" />
+              </h2>
               <p className="text-xs text-[#9ca3af] mt-0.5">Live on the ATProto Hypercerts network</p>
             </div>
             <a
@@ -254,63 +257,68 @@ export default function Home() {
           </div>
 
           {/* Table */}
-          <div className="border border-[#e5e7eb] rounded-xl overflow-hidden">
+          <div className="rounded-xl border border-[#e5e7eb] overflow-hidden">
             {/* Header */}
-            <div className="grid grid-cols-[1fr_auto_auto_auto_auto] gap-4 px-4 py-2.5 bg-[#f9fafb] border-b border-[#e5e7eb] text-[10px] font-medium text-[#9ca3af] uppercase tracking-wide">
-              <span>Project</span>
-              <span className="text-right">Verified</span>
-              <span className="text-right">Flagged</span>
-              <span className="w-24">Confidence</span>
-              <span className="w-4" />
+            <div className="grid grid-cols-[1fr_64px_64px_140px_20px] px-5 py-2.5 bg-[#f9fafb] border-b border-[#e5e7eb]">
+              <span className="text-[10px] font-medium text-[#9ca3af] uppercase tracking-wider">Project</span>
+              <span className="text-[10px] font-medium text-[#9ca3af] uppercase tracking-wider text-right">Verified</span>
+              <span className="text-[10px] font-medium text-[#9ca3af] uppercase tracking-wider text-right">Flagged</span>
+              <span className="text-[10px] font-medium text-[#9ca3af] uppercase tracking-wider pl-4">Confidence</span>
+              <span />
             </div>
 
-            {/* Rows */}
-            {RECENT.map((h, i) => (
-              <a
-                key={h.rkey}
-                href={h.hyperscan}
-                target="_blank"
-                rel="noopener"
-                className={`grid grid-cols-[1fr_auto_auto_auto_auto] gap-4 items-center px-4 py-3.5 hover:bg-[#f9fafb] transition-colors group ${i < RECENT.length - 1 ? "border-b border-[#e5e7eb]" : ""}`}
-              >
-                {/* Name + ecosystem */}
-                <div className="min-w-0">
-                  <span className="text-sm font-medium text-[#0a0a0a]">{h.name}</span>
-                  <span className="ml-2 text-[10px] font-mono text-[#9ca3af] bg-[#f3f4f6] px-1.5 py-0.5 rounded">
-                    {h.ecosystem}
-                  </span>
-                </div>
-
-                {/* Verified */}
-                <span className="text-xs font-medium text-[#16a34a] text-right tabular-nums">
-                  ✓ {h.verified}
-                </span>
-
-                {/* Flagged */}
-                <span className={`text-xs font-medium text-right tabular-nums ${h.flagged > 0 ? "text-[#dc2626]" : "text-[#d1d5db]"}`}>
-                  {h.flagged > 0 ? `✗ ${h.flagged}` : "—"}
-                </span>
-
-                {/* Confidence bar */}
-                <div className="w-24">
-                  <ConfidenceBar value={h.confidence} />
-                </div>
-
-                {/* External link */}
-                <svg
-                  width="12"
-                  height="12"
-                  viewBox="0 0 12 12"
-                  fill="none"
-                  className="text-[#d1d5db] group-hover:text-[#9ca3af] transition-colors"
+            {RECENT.map((h, i) => {
+              const barColor = h.confidence >= 70 ? "#16a34a" : h.confidence >= 40 ? "#d97706" : "#dc2626";
+              return (
+                <a
+                  key={h.rkey}
+                  href={h.hyperscan}
+                  target="_blank"
+                  rel="noopener"
+                  className={`grid grid-cols-[1fr_64px_64px_140px_20px] items-center px-5 py-4 hover:bg-[#f9fafb] transition-colors group${i < RECENT.length - 1 ? " border-b border-[#e5e7eb]" : ""}`}
                 >
-                  <path d="M2 10L10 2M10 2H5M10 2V7" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              </a>
-            ))}
+                  {/* Name */}
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-medium text-[#0a0a0a]">{h.name}</span>
+                      <span className="text-[10px] font-mono text-[#b0b6c0] bg-[#f3f4f6] px-1.5 py-0.5 rounded leading-none">
+                        {h.ecosystem}
+                      </span>
+                    </div>
+                    <div className="text-[11px] font-mono text-[#c4c8cf] mt-0.5">
+                      {h.contributors} contributors
+                      {h.unresolved > 0 && (
+                        <span className="text-[#d97706]"> · {h.unresolved} unresolved</span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Verified */}
+                  <span className="text-xs font-medium text-[#16a34a] text-right tabular-nums">✓ {h.verified}</span>
+
+                  {/* Flagged */}
+                  <span className={`text-xs font-medium text-right tabular-nums ${h.flagged > 0 ? "text-[#dc2626]" : "text-[#d1d5db]"}`}>
+                    {h.flagged > 0 ? `✗ ${h.flagged}` : "—"}
+                  </span>
+
+                  {/* Confidence */}
+                  <div className="pl-4 flex items-center gap-2.5">
+                    <div className="flex-1 h-[3px] rounded-full bg-[#f3f4f6] overflow-hidden">
+                      <div className="h-full rounded-full transition-all" style={{ width: `${h.confidence}%`, backgroundColor: barColor }} />
+                    </div>
+                    <span className="text-xs tabular-nums font-medium shrink-0" style={{ color: barColor }}>{h.confidence}%</span>
+                  </div>
+
+                  {/* External link */}
+                  <svg width="11" height="11" viewBox="0 0 12 12" fill="none" className="text-[#d1d5db] group-hover:text-[#9ca3af] transition-colors ml-auto">
+                    <path d="M2 10L10 2M10 2H5M10 2V7" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </a>
+              );
+            })}
           </div>
 
-          <p className="text-[11px] text-[#9ca3af] mt-3 font-mono text-center">
+          <p className="text-[11px] text-[#b0b6c0] mt-3 font-mono text-center">
             did:plc:fke3rhssj7rdghxee2t73x73 · org.hypercerts.claim.activity
           </p>
         </div>
