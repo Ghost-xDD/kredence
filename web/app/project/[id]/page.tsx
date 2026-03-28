@@ -19,6 +19,16 @@ async function getProject(slug: string): Promise<HypercertPayload | null> {
   }
 }
 
+/**
+ * Build the correct IPFS gateway URL for a Storacha CID.
+ * Raw block CIDs (bafkrei…) are served at the root with no path.
+ * Directory CIDs (bafybei…) need a filename appended.
+ */
+function storachaGatewayUrl(cid: string): string {
+  if (!cid || cid === "pending") return "#";
+  return `https://${cid}.ipfs.storacha.link`;
+}
+
 const CHALLENGE_TYPE_LABELS: Record<string, string> = {
   "vague-metric": "Vague metric",
   "attribution": "Attribution",
@@ -425,7 +435,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
                 <span className="text-xs text-[#6b7280] w-36 shrink-0">{ref.label}</span>
                 <span className="text-[11px] font-mono text-[#374151] truncate flex-1">{ref.cid}</span>
                 <a
-                  href={`https://storacha.network/files/${ref.cid}`}
+                  href={storachaGatewayUrl(ref.cid)}
                   target="_blank"
                   rel="noopener"
                   className="text-[10px] font-mono text-[#9ca3af] hover:text-[#0a0a0a] transition-colors shrink-0"

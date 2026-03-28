@@ -413,6 +413,20 @@ export async function runSynthesisAgent(
                   activityUri: atproto.activityUri,
                   hyperscanUrl: atproto.hyperscanUrl,
                 });
+
+                // Re-upload payload now that atproto data is populated, so the
+                // stored JSON reflects the full, final state (including ATProto refs).
+                try {
+                  const { cid: finalCid } = await uploadJSON(payload, `hypercert-${project.id}.json`);
+                  payload.storachaRefs.hypercertPayloadCid = finalCid;
+                  updatedProject = { ...updatedProject, hypercertPayloadCid: finalCid, lastUpdated: new Date().toISOString() };
+                  ctx.logger.log("info", "submit", "synthesis:payload-updated", { id: project.id, cid: finalCid });
+                } catch (reUploadErr) {
+                  ctx.logger.log("warn", "submit", "synthesis:payload-update-failed", {
+                    id: project.id,
+                    error: reUploadErr instanceof Error ? reUploadErr.message : String(reUploadErr),
+                  });
+                }
               } else {
                 ctx.logger.log("warn", "submit", "synthesis:hypercerts-skipped", {
                   id: project.id,
