@@ -135,7 +135,7 @@ export async function scrapeDevspot(hackathonUrl: string): Promise<DevspotProjec
   const origin = new URL(hackathonUrl).origin;
   const resolvedAt = new Date().toISOString();
 
-  return allItems.map((item): DevspotProject => {
+  return submitted.map((item): DevspotProject => {
     const sources: ProjectSource[] = [
       {
         type: "submission-page",
