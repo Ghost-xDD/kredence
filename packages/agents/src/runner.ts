@@ -1,4 +1,4 @@
-import type { AgentOutput, AgentRole } from "@credence/types";
+import type { AgentLogEntry, AgentOutput, AgentRole } from "@credence/types";
 import { uploadJSON } from "@credence/storage";
 import { AgentLogger } from "./logger.js";
 
@@ -29,12 +29,12 @@ export async function runAgent<TInput, TOutput>(
   input: TInput,
   inputDescription: string,
   fn: (input: TInput, ctx: AgentContext) => Promise<{ output: TOutput; summary: string; confidence: number }>,
-  options?: { maxDurationMs?: number }
+  options?: { maxDurationMs?: number; onEntry?: (entry: AgentLogEntry) => void }
 ): Promise<AgentRunResult<TOutput>> {
   const maxDuration = options?.maxDurationMs ?? 5 * 60 * 1000; // 5 min default
   const startMs = Date.now();
 
-  const logger = new AgentLogger(identity.agentId, identity.agentRegistry, role);
+  const logger = new AgentLogger(identity.agentId, identity.agentRegistry, role, options?.onEntry);
   const ctx: AgentContext = { ...identity, role, logger };
 
   logger.log("info", "discover", "agent:start", {

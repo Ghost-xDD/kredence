@@ -9,7 +9,7 @@
 import { tool } from "@langchain/core/tools";
 import { z } from "zod";
 import { ChatOpenAI } from "@langchain/openai";
-import type { EcosystemInput, ProjectManifest, ProjectRecord } from "@credence/types";
+import type { AgentLogEntry, EcosystemInput, ProjectManifest, ProjectRecord } from "@credence/types";
 import { runAgent } from "../runner.js";
 import { scrapeDevspot } from "./devspot.js";
 import { fetchFilecoinDevGrants } from "./filecoin-devgrants.js";
@@ -86,7 +86,10 @@ function getScoutIdentity() {
  * Run the Scout Agent for a given ecosystem input.
  * Returns a full ProjectManifest stored on Storacha.
  */
-export async function runScoutAgent(input: EcosystemInput): Promise<ProjectManifest> {
+export async function runScoutAgent(
+  input: EcosystemInput,
+  onEntry?: (entry: AgentLogEntry) => void
+): Promise<ProjectManifest> {
   const identity = getScoutIdentity();
 
   const { output, agentOutput } = await runAgent(
@@ -182,7 +185,8 @@ export async function runScoutAgent(input: EcosystemInput): Promise<ProjectManif
         summary: `Discovered ${deduped.length} projects from ${ecosystemInput.kind} ecosystem`,
         confidence: 1.0,
       };
-    }
+    },
+    { ...(onEntry !== undefined ? { onEntry } : {}) }
   );
 
   return output;

@@ -14,7 +14,7 @@
  * Projects are processed in parallel (bounded by CONCURRENCY).
  * Failures in individual sources are logged and do not block other sources.
  */
-import type { EvidenceBundle, ProjectManifest, ProjectRecord } from "@credence/types";
+import type { AgentLogEntry, EvidenceBundle, ProjectManifest, ProjectRecord } from "@credence/types";
 import { runAgent, type AgentContext } from "../runner.js";
 import { uploadJSON } from "@credence/storage";
 import { getOperatorWallet } from "../identity.js";
@@ -187,7 +187,10 @@ export type EvidenceRunResult = {
   bundles: EvidenceBundle[];
 };
 
-export async function runEvidenceAgent(manifest: ProjectManifest): Promise<EvidenceRunResult> {
+export async function runEvidenceAgent(
+  manifest: ProjectManifest,
+  onEntry?: (entry: AgentLogEntry) => void
+): Promise<EvidenceRunResult> {
   const identity = getEvidenceIdentity();
 
   const { output } = await runAgent(
@@ -280,7 +283,7 @@ export async function runEvidenceAgent(manifest: ProjectManifest): Promise<Evide
         confidence: successCount / Math.max(1, projectManifest.projects.length),
       };
     },
-    { maxDurationMs: 20 * 60 * 1000 } // 20 min for large ecosystems
+    { maxDurationMs: 20 * 60 * 1000, ...(onEntry !== undefined ? { onEntry } : {}) } // 20 min for large ecosystems
   );
 
   return output;
