@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from 'next/link';
 
 export function Nav() {
   return (
@@ -8,21 +8,51 @@ export function Nav() {
         <Link href="/" className="flex items-center gap-2 shrink-0">
           <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
             <rect x="1" y="1" width="6" height="6" rx="1.5" fill="#0a0a0a" />
-            <rect x="11" y="1" width="6" height="6" rx="1.5" fill="#0a0a0a" opacity="0.4" />
-            <rect x="1" y="11" width="6" height="6" rx="1.5" fill="#0a0a0a" opacity="0.4" />
+            <rect
+              x="11"
+              y="1"
+              width="6"
+              height="6"
+              rx="1.5"
+              fill="#0a0a0a"
+              opacity="0.4"
+            />
+            <rect
+              x="1"
+              y="11"
+              width="6"
+              height="6"
+              rx="1.5"
+              fill="#0a0a0a"
+              opacity="0.4"
+            />
             <rect x="11" y="11" width="6" height="6" rx="1.5" fill="#0a0a0a" />
           </svg>
-          <span className="font-semibold text-sm tracking-tight text-[#0a0a0a]">Credence</span>
-          <span className="hidden sm:inline text-[10px] text-[#6b7280] font-medium tracking-widest uppercase">
-            by Hypercerts
+          <span className="font-semibold text-sm tracking-tight text-[#0a0a0a]">
+            Credence
           </span>
         </Link>
 
         {/* Nav links */}
         <nav className="hidden sm:flex items-center gap-6 text-sm text-[#374151]">
-          <Link href="/pipeline" className="hover:text-[#0a0a0a] transition-colors">Pipeline</Link>
-          <Link href="/explore" className="hover:text-[#0a0a0a] transition-colors">Explore</Link>
-          <Link href="/agents" className="hover:text-[#0a0a0a] transition-colors">Agents</Link>
+          <Link
+            href="/pipeline"
+            className="hover:text-[#0a0a0a] transition-colors"
+          >
+            Pipeline
+          </Link>
+          <Link
+            href="/explore"
+            className="hover:text-[#0a0a0a] transition-colors"
+          >
+            Explore
+          </Link>
+          <Link
+            href="/agents"
+            className="hover:text-[#0a0a0a] transition-colors"
+          >
+            Agents
+          </Link>
           <Link
             href="https://www.hyperscan.dev"
             target="_blank"
@@ -30,8 +60,20 @@ export function Nav() {
             className="hover:text-[#0a0a0a] transition-colors flex items-center gap-1"
           >
             Hyperscan
-            <svg width="10" height="10" viewBox="0 0 10 10" fill="none" className="opacity-40">
-              <path d="M2 8L8 2M8 2H4M8 2V6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+            <svg
+              width="10"
+              height="10"
+              viewBox="0 0 10 10"
+              fill="none"
+              className="opacity-40"
+            >
+              <path
+                d="M2 8L8 2M8 2H4M8 2V6"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
             </svg>
           </Link>
         </nav>
@@ -40,8 +82,19 @@ export function Nav() {
         <div className="flex items-center gap-3">
           <button className="hidden sm:block text-[#6b7280] hover:text-[#0a0a0a] transition-colors">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <circle cx="7" cy="7" r="5" stroke="currentColor" strokeWidth="1.5" />
-              <path d="M11 11L14 14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+              <circle
+                cx="7"
+                cy="7"
+                r="5"
+                stroke="currentColor"
+                strokeWidth="1.5"
+              />
+              <path
+                d="M11 11L14 14"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+              />
             </svg>
           </button>
           <Link

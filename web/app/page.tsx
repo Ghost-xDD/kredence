@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Nav } from "./components/nav";
+import { MOCK_PROJECTS } from "./lib/mock-data";
 
 const PIPELINE_STEPS = [
   {
@@ -64,41 +65,8 @@ const PIPELINE_STEPS = [
   },
 ];
 
-const RECENT = [
-  {
-    name: "ZKMarket",
-    ecosystem: "PL Genesis",
-    confidence: 56,
-    verified: 5,
-    flagged: 4,
-    unresolved: 0,
-    contributors: 2,
-    hyperscan: "https://www.hyperscan.dev/data?did=did%3Aplc%3Afke3rhssj7rdghxee2t73x73&collection=org.hypercerts.claim.activity&rkey=3mi3m7rvz2g2y",
-    rkey: "3mi3m7rvz2g2y",
-  },
-  {
-    name: "YayNay.wtf",
-    ecosystem: "PL Genesis",
-    confidence: 50,
-    verified: 4,
-    flagged: 4,
-    unresolved: 0,
-    contributors: 3,
-    hyperscan: "https://www.hyperscan.dev/data?did=did%3Aplc%3Afke3rhssj7rdghxee2t73x73&collection=org.hypercerts.claim.activity&rkey=3mi3m7tczmt2r",
-    rkey: "3mi3m7tczmt2r",
-  },
-  {
-    name: "Safenote",
-    ecosystem: "PL Genesis",
-    confidence: 56,
-    verified: 4,
-    flagged: 0,
-    unresolved: 5,
-    contributors: 3,
-    hyperscan: "https://www.hyperscan.dev/data?did=did%3Aplc%3Afke3rhssj7rdghxee2t73x73&collection=org.hypercerts.claim.activity&rkey=3mi3m7tjxcl2r",
-    rkey: "3mi3m7tjxcl2r",
-  },
-];
+// Show 3 recent projects from shared mock data
+const RECENT = MOCK_PROJECTS.filter((p) => ["zkmarket", "yaynay-wtf", "safenote"].includes(p.id));
 
 const STATS = [
   { value: "178", label: "Projects evaluated" },
@@ -246,14 +214,12 @@ export default function Home() {
               </h2>
               <p className="text-xs text-[#9ca3af] mt-0.5">Live on the ATProto Hypercerts network</p>
             </div>
-            <a
-              href="https://www.hyperscan.dev/agents/feed"
-              target="_blank"
-              rel="noopener"
+            <Link
+              href="/explore"
               className="hidden sm:block text-xs text-[#6b7280] hover:text-[#0a0a0a] transition-colors shrink-0"
             >
-              Explore on Hyperscan →
-            </a>
+              Explore all →
+            </Link>
           </div>
 
           {/* Table */}
@@ -270,11 +236,9 @@ export default function Home() {
             {RECENT.map((h, i) => {
               const barColor = h.confidence >= 70 ? "#16a34a" : h.confidence >= 40 ? "#d97706" : "#dc2626";
               return (
-                <a
-                  key={h.rkey}
-                  href={h.hyperscan}
-                  target="_blank"
-                  rel="noopener"
+                <Link
+                  key={h.id}
+                  href={`/project/${h.id}`}
                   className={`grid grid-cols-[1fr_120px_16px] sm:grid-cols-[1fr_64px_64px_140px_16px] items-center px-4 sm:px-5 py-4 hover:bg-[#f9fafb] transition-colors group${i < RECENT.length - 1 ? " border-b border-[#e5e7eb]" : ""}`}
                 >
                   {/* Name */}
@@ -286,7 +250,7 @@ export default function Home() {
                       </span>
                     </div>
                     <div className="text-[11px] font-mono text-[#c4c8cf] mt-0.5">
-                      {h.contributors} contributors
+                      {h.contributors.length} contributors
                       {h.unresolved > 0 && (
                         <span className="text-[#d97706]"> · {h.unresolved} unresolved</span>
                       )}
@@ -309,17 +273,17 @@ export default function Home() {
                     <span className="text-xs tabular-nums font-medium shrink-0" style={{ color: barColor }}>{h.confidence}%</span>
                   </div>
 
-                  {/* External link */}
+                  {/* Chevron */}
                   <svg width="11" height="11" viewBox="0 0 12 12" fill="none" className="text-[#d1d5db] group-hover:text-[#9ca3af] transition-colors ml-auto">
-                    <path d="M2 10L10 2M10 2H5M10 2V7" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+                    <path d="M4 2l4 4-4 4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
-                </a>
+                </Link>
               );
             })}
           </div>
 
           <p className="text-[11px] text-[#b0b6c0] mt-3 font-mono text-center truncate px-2">
-            did:plc:fke3rhssj7rdghxee2t73x73 · org.hypercerts.claim.activity
+            did:plc:fke3rhssj7rdghxee2t73x73 · <Link href="/explore" className="hover:text-[#9ca3af] transition-colors">View all 178 hypercerts →</Link>
           </p>
         </div>
       </section>

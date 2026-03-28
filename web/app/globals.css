@@ -42,3 +42,30 @@ body {
   from { background-position: 0px 0px; }
   to   { background-position: 28px 28px; }
 }
+
+@keyframes handover-in {
+  from { opacity: 0; transform: translateY(-6px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes handover-out {
+  from { opacity: 1; transform: translateY(0) scale(1); }
+  to   { opacity: 0; transform: translateY(-6px) scale(0.98); }
+}
+
+@keyframes agent-enter {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.animate-handover-in {
+  animation: handover-in 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-handover-out {
+  animation: handover-out 0.2s ease-in forwards;
+}
+
+.animate-agent-enter {
+  animation: agent-enter 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
