@@ -15,6 +15,7 @@ import type { AdversarialLog, ProjectRecord } from "@credence/types";
 import type { EvidenceRunResult } from "../evidence/index.js";
 import { runAgent, type AgentContext } from "../runner.js";
 import { uploadJSON } from "@credence/storage";
+import { getOperatorWallet } from "../identity.js";
 import { challengeClaims } from "./challenge.js";
 import { signAdversarialLog } from "./sign.js";
 
@@ -24,7 +25,7 @@ function getAdversarialIdentity() {
   return {
     agentId: process.env["ADVERSARIAL_AGENT_ID"] ?? "unregistered",
     agentRegistry: `eip155:84532:0x8004A818BFB912233c491871b3d84c89A494BD9e`,
-    operatorWallet: process.env["OPERATOR_WALLET"] ?? "0x0000000000000000000000000000000000000000",
+    operatorWallet: getOperatorWallet(),
   };
 }
 

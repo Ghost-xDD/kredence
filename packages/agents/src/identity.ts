@@ -19,6 +19,20 @@ export const ERC8004_CONTRACTS = {
 
 export const AGENT_REGISTRY_PREFIX = `eip155:${baseSepolia.id}:${ERC8004_CONTRACTS.identityRegistry}`;
 
+/**
+ * Derive the operator wallet address from OPERATOR_PRIVATE_KEY.
+ * Used by all agents so we never need a separate OPERATOR_WALLET env var.
+ */
+export function getOperatorWallet(): string {
+  const key = process.env["OPERATOR_PRIVATE_KEY"];
+  if (!key) return "0x0000000000000000000000000000000000000000";
+  try {
+    return privateKeyToAccount(key as `0x${string}`).address;
+  } catch {
+    return "0x0000000000000000000000000000000000000000";
+  }
+}
+
 const IDENTITY_ABI = parseAbi([
   "function register() external returns (uint256 agentId)",
   "function setAgentURI(uint256 agentId, string newURI) external",

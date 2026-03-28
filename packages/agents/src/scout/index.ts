@@ -14,6 +14,7 @@ import { runAgent } from "../runner.js";
 import { scrapeDevspot } from "./devspot.js";
 import { fetchFilecoinDevGrants } from "./filecoin-devgrants.js";
 import { uploadJSON } from "@credence/storage";
+import { getOperatorWallet } from "../identity.js";
 
 // ── LangChain Tools ────────────────────────────────────────────────────────
 
@@ -75,7 +76,7 @@ function getScoutIdentity() {
   return {
     agentId: process.env["SCOUT_AGENT_ID"] ?? "unregistered",
     agentRegistry: `eip155:84532:0x8004A818BFB912233c491871b3d84c89A494BD9e`,
-    operatorWallet: process.env["OPERATOR_WALLET"] ?? "0x0000000000000000000000000000000000000000",
+    operatorWallet: getOperatorWallet(),
   };
 }
 

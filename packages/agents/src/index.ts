@@ -7,6 +7,7 @@ export {
   submitReputationFeedback,
   explorerTxUrl,
   explorerAgentUrl,
+  getOperatorWallet,
   ERC8004_CONTRACTS,
   AGENT_REGISTRY_PREFIX,
 } from "./identity.js";
