@@ -369,50 +369,47 @@ export default function PipelinePage() {
           setActiveAction(action);
           setActiveTool(null);
 
-          // Extract scout stats from log messages
+          // Extract live stats from structured log details
           if (msg.agent === "scout") {
-            const pagesMatch = action.match(/(\d+)\s+projects/i);
-            if (pagesMatch) {
-              const n = parseInt(pagesMatch[1] ?? "0", 10);
-              updateStats({ pagesScraped: (stats.pagesScraped || 0) + 1, projectsRaw: n });
+            if (action === "scout:deduplication" && details) {
+              const before = (details["before"] as number) ?? 0;
+              const after  = (details["after"]  as number) ?? 0;
+              updateStats({ projectsIndexed: after, duplicatesRemoved: before - after });
             }
-            const indexedMatch = action.match(/(\d+)\s+unique/i);
-            if (indexedMatch) {
-              const indexed = parseInt(indexedMatch[1] ?? "0", 10);
-              const raw = stats.projectsRaw || 0;
-              updateStats({ projectsIndexed: indexed, duplicatesRemoved: Math.max(0, raw - indexed) });
-            }
-            if (action.toLowerCase().includes("baf") || action.toLowerCase().includes("cid")) {
-              const cidMatch = action.match(/(baf[a-z0-9]{20,})/i);
-              if (cidMatch) updateStats({ manifestCid: `${cidMatch[1].slice(0, 16)}…` });
+            if (action === "scout:done" && details) {
+              const cid = details["manifestCid"] as string | undefined;
+              if (cid) updateStats({ manifestCid: `${cid.slice(0, 16)}…` });
             }
           }
 
-          // Extract evidence stats
           if (msg.agent === "evidence") {
-            const claimsMatch = action.match(/(\d+)\s+(?:structured\s+)?claims/i);
-            if (claimsMatch) {
-              const n = parseInt(claimsMatch[1] ?? "0", 10);
-              updateStats({ claimsExtracted: (stats.claimsExtracted || 0) + n });
+            if (action === "evidence:claims:done" && details) {
+              const n = (details["claimCount"] as number) ?? 0;
+              setStats((s) => ({ ...s, claimsExtracted: s.claimsExtracted + n }));
+              flash(["claimsExtracted"]);
+            }
+            if (action === "evidence:project-start") {
+              setStats((s) => ({ ...s, evidenceProjectsDone: s.evidenceProjectsDone + 1 }));
+              flash(["evidenceProjectsDone"]);
             }
           }
 
-          // Extract adversarial stats from summary lines
-          if (msg.agent === "adversarial") {
-            const verMatch = action.match(/✓\s*(\d+)\s+verified/i);
-            const flgMatch = action.match(/✗\s*(\d+)\s+flagged/i);
-            if (verMatch || flgMatch) {
-              const verified = verMatch ? parseInt(verMatch[1] ?? "0", 10) : 0;
-              const flagged  = flgMatch ? parseInt(flgMatch[1] ?? "0", 10)  : 0;
-              updateStats({
-                adversarialVerified:  (stats.adversarialVerified  || 0) + verified,
-                adversarialFlagged:   (stats.adversarialFlagged   || 0) + flagged,
-              });
+          if (msg.agent === "adversarial" && action === "adversarial:challenge-done" && details) {
+            const ver = (details["verified"]   as number) ?? 0;
+            const flg = (details["flagged"]    as number) ?? 0;
+            const unr = (details["unresolved"] as number) ?? 0;
+            setStats((s) => ({
+              ...s,
+              adversarialVerified:   s.adversarialVerified   + ver,
+              adversarialFlagged:    s.adversarialFlagged    + flg,
+              adversarialUnresolved: s.adversarialUnresolved + unr,
+            }));
+            const total = ver + flg + unr;
+            if (total > 0) {
+              const pct = Math.round((ver / total) * 100);
+              updateStats({ avgConfidence: `${pct}%` });
             }
-            const confMatch = action.match(/confidence\s+(\d+)%/i);
-            if (confMatch) {
-              updateStats({ avgConfidence: `${confMatch[1]}%` });
-            }
+            flash(["adversarialVerified", "adversarialFlagged", "adversarialUnresolved", "avgConfidence"]);
           }
           break;
         }
@@ -435,9 +432,21 @@ export default function PipelinePage() {
           setActiveTool(null);
           setActiveAction(`✓ ${msg.tool} — ${formatOutput(out)}`);
 
-          // Evidence source count
+          // Scout: count raw projects from scraper output
+          if (msg.agent === "scout" &&
+            ["scrape_devspot_hackathon", "fetch_filecoin_dev_grants", "process_manual_urls"].includes(msg.tool)) {
+            try {
+              const projects = JSON.parse(out) as unknown;
+              if (Array.isArray(projects)) {
+                updateStats({ projectsRaw: projects.length, pagesScraped: 1 });
+              }
+            } catch { /* ignore */ }
+          }
+
+          // Evidence: count sources queried per tool call
           if (msg.agent === "evidence") {
-            updateStats({ sourcesQueried: (stats.sourcesQueried || 0) + 1 });
+            setStats((s) => ({ ...s, sourcesQueried: s.sourcesQueried + 1 }));
+            flash(["sourcesQueried"]);
           }
           break;
         }
