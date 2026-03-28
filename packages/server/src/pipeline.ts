@@ -86,13 +86,12 @@ export async function runPipeline(
     const manifest = await runScoutAgent(input, makeOnEntry(runId, "scout", emit));
     emit({ type: "stage_done", runId, stage: "scout" });
 
-    // Filter to projects with at least one GitHub source + one website source
+    // github-repo inputs have only a GitHub source (no website to discover upfront).
+    // All other adapters require both a GitHub source and a website source.
+    const hasGithub  = (p: { sources: { type: string }[] }) => p.sources.some((s) => s.type === "github");
+    const hasWebsite = (p: { sources: { type: string }[] }) => p.sources.some((s) => s.type === "website");
     const selected = manifest.projects
-      .filter(
-        (p) =>
-          p.sources.some((s: { type: string; url: string }) => s.type === "github") &&
-          p.sources.some((s: { type: string; url: string }) => s.type === "website")
-      )
+      .filter((p) => input.kind === "github-repo" ? hasGithub(p) : hasGithub(p) && hasWebsite(p))
       .slice(0, maxProjects);
 
     const trimmedManifest = { ...manifest, projects: selected };
