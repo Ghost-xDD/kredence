@@ -8,3 +8,11 @@ healthcheckPath = "/health"
 healthcheckTimeout = 30
 restartPolicyType = "on_failure"
 restartPolicyMaxRetries = 3
+# Redeploy whenever any package that is bundled into the server changes
+watchPaths = [
+  "packages/server/**",
+  "packages/agents/**",
+  "packages/storage/**",
+  "packages/types/**",
+  "railway.toml",
+]
