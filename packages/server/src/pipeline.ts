@@ -14,7 +14,7 @@ import {
 } from "@credence/agents";
 import { updateRegistry } from "@credence/storage";
 import type { ServerMessage, PipelineSummary } from "./ws-types.js";
-import { getRegistryCid, setRegistry, getRegistry } from "./registry-store.js";
+import { getRegistryCid, persistRegistry, getRegistry } from "./registry-store.js";
 
 export type EmitFn = (msg: ServerMessage) => void;
 
@@ -164,7 +164,7 @@ export async function runPipeline(
         const newCid = await updateRegistry(getRegistryCid(), newEntries);
         const existing = getRegistry();
         const slugSet = new Set(newEntries.map((e) => e.slug));
-        setRegistry(
+        await persistRegistry(
           {
             updatedAt: new Date().toISOString(),
             entries: [
@@ -174,7 +174,6 @@ export async function runPipeline(
           },
           newCid
         );
-        console.log(`[pipeline][${runId}] registry updated — CID: ${newCid}`);
       } catch (err) {
         console.error(`[pipeline][${runId}] registry update failed:`, err);
       }
