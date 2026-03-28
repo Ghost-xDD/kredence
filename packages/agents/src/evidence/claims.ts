@@ -48,17 +48,30 @@ export async function extractClaims(
     if (bundle.github.readmeContent) {
       parts.push(`## README\n${bundle.github.readmeContent.slice(0, 4000)}`);
     }
+
+    // Derive repo age context
+    const repoAgeLabel = (() => {
+      if (!bundle.github.createdAt) return "unknown";
+      const ageMs = Date.now() - new Date(bundle.github.createdAt).getTime();
+      const ageDays = Math.floor(ageMs / (1000 * 60 * 60 * 24));
+      if (ageDays <= 14) return `${ageDays} days old (created for this hackathon)`;
+      if (ageDays <= 90) return `${ageDays} days old (recently created)`;
+      return `${Math.floor(ageDays / 30)} months old (pre-existing project)`;
+    })();
+
     const activitySummary = [
+      `Repository age: ${repoAgeLabel} (created: ${bundle.github.createdAt})`,
       `Stars: ${bundle.github.stars}`,
       `Forks: ${bundle.github.forks}`,
       `Commits (last 90 days): ${bundle.github.commitCount90d}`,
       `Merged PRs (last 90 days): ${bundle.github.mergedPRCount90d}`,
       `Closed issues (last 90 days): ${bundle.github.closedIssueCount90d}`,
-      `Contributors: ${bundle.github.contributors.map((c) => c.login).join(", ") || "none listed"}`,
+      `Contributors: ${bundle.github.contributors.length} (${bundle.github.contributors.map((c) => `${c.login} (${c.contributions} commits)`).join(", ") || "none"})`,
       `Topics: ${bundle.github.topics.join(", ") || "none"}`,
       `Releases: ${bundle.github.releases.map((r) => r.tag).join(", ") || "none"}`,
+      `Last push: ${bundle.github.pushedAt || "unknown"}`,
     ].join("\n");
-    parts.push(`## GitHub Activity (verified, not self-reported)\n${activitySummary}`);
+    parts.push(`## GitHub Activity (INDEPENDENTLY VERIFIED — not self-reported)\n${activitySummary}`);
   }
 
   if (bundle.website) {
