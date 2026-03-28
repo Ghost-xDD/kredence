@@ -20,32 +20,47 @@ let currentRevision: IPNSRevision | null = null;
 
 /** Seed the registry from IPNS (preferred) or a static CID env var. */
 export async function initRegistry(): Promise<void> {
-  const w3key = process.env["W3NAME_KEY"] ?? null;
+  // Cap startup registry seeding at 12 s so a slow/unavailable Storacha gateway
+  // never delays the health check past Railway's timeout window.
+  const SEED_TIMEOUT_MS = 12_000;
 
-  if (w3key) {
-    console.log("[registry] resolving IPNS name…");
-    const result = await resolveIPNS(w3key);
-    if (result) {
-      currentCid = result.cid;
-      currentRevision = result.revision;
-      store = await fetchRegistry(currentCid);
-      console.log(`[registry] loaded ${store.entries.length} entries via IPNS → ${currentCid}`);
-    } else {
-      console.log("[registry] IPNS name has no record yet — starting with empty registry");
+  const seed = async () => {
+    const w3key = process.env["W3NAME_KEY"] ?? null;
+
+    if (w3key) {
+      console.log("[registry] resolving IPNS name…");
+      const result = await resolveIPNS(w3key);
+      if (result) {
+        currentCid = result.cid;
+        currentRevision = result.revision;
+        store = await fetchRegistry(currentCid);
+        console.log(`[registry] loaded ${store.entries.length} entries via IPNS → ${currentCid}`);
+      } else {
+        console.log("[registry] IPNS name has no record yet — starting with empty registry");
+      }
+      return;
     }
-    return;
-  }
 
-  const staticCid = process.env["REGISTRY_CID"] ?? null;
-  if (staticCid) {
-    console.log("[registry] loading from REGISTRY_CID", staticCid);
-    currentCid = staticCid;
-    store = await fetchRegistry(currentCid);
-    console.log(`[registry] loaded ${store.entries.length} entries`);
-    return;
-  }
+    const staticCid = process.env["REGISTRY_CID"] ?? null;
+    if (staticCid) {
+      console.log("[registry] loading from REGISTRY_CID", staticCid);
+      currentCid = staticCid;
+      store = await fetchRegistry(currentCid);
+      console.log(`[registry] loaded ${store.entries.length} entries`);
+      return;
+    }
 
-  console.log("[registry] no W3NAME_KEY or REGISTRY_CID — starting with empty registry");
+    console.log("[registry] no W3NAME_KEY or REGISTRY_CID — starting with empty registry");
+  };
+
+  const timeout = new Promise<void>((resolve) =>
+    setTimeout(() => {
+      console.warn(`[registry] seed timed out after ${SEED_TIMEOUT_MS}ms — starting with empty registry`);
+      resolve();
+    }, SEED_TIMEOUT_MS)
+  );
+
+  await Promise.race([seed(), timeout]);
 }
 
 export function getRegistry(): HypercertRegistry {
