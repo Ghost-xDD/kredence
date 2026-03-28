@@ -254,12 +254,12 @@ ${context}`,
     evidenceRefs: [
       {
         label: "Evidence Bundle",
-        url: `https://${evidenceBundleCid}.ipfs.storacha.link/evidence-${project.id}.json`,
+        url: `https://${evidenceBundleCid}.ipfs.storacha.link`,
         storachaCid: evidenceBundleCid,
       },
       {
         label: "Adversarial Log (Signed Receipt)",
-        url: `https://${adversarialLogCid}.ipfs.storacha.link/adversarial-${project.id}.json`,
+        url: `https://${adversarialLogCid}.ipfs.storacha.link`,
         storachaCid: adversarialLogCid,
       },
     ],
