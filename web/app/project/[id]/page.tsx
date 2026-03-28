@@ -1,7 +1,23 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { Nav } from "../../components/nav";
-import { MOCK_PROJECTS, MOCK_AGENTS } from "../../lib/mock-data";
+import type { HypercertPayload } from "@credence/types";
+
+const SERVER_URL =
+  process.env["NEXT_PUBLIC_SERVER_URL"] ?? "http://localhost:3001";
+
+async function getProject(slug: string): Promise<HypercertPayload | null> {
+  try {
+    const res = await fetch(`${SERVER_URL}/projects/${encodeURIComponent(slug)}`, {
+      next: { revalidate: 60 },
+    });
+    if (res.status === 404) return null;
+    if (!res.ok) throw new Error(`${res.status}`);
+    return res.json() as Promise<HypercertPayload>;
+  } catch {
+    return null;
+  }
+}
 
 const CHALLENGE_TYPE_LABELS: Record<string, string> = {
   "vague-metric": "Vague metric",
@@ -57,25 +73,57 @@ const AGENT_ICONS: Record<string, React.ReactNode> = {
 
 export default async function ProjectDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const project = MOCK_PROJECTS.find((p) => p.id === id);
-  if (!project) notFound();
+  const payload = await getProject(id);
+  if (!payload) notFound();
 
-  const hypercertJson = {
-    title: project.name,
-    description: project.description,
-    contributors: project.contributors,
-    timeframeStart: project.timeframe.start,
-    timeframeEnd: project.timeframe.end,
-    impactCategory: project.impactCategory,
-    confidenceScore: project.confidence / 100,
-    verifiedClaims: project.verifiedClaims.length,
-    flaggedClaims: project.flaggedClaims.length,
-    openQuestions: project.openQuestions.length,
-    evaluatorSummary: project.evaluatorSummary,
-    storachaRefs: project.storachaCids,
-    atproto: project.atproto,
-    generatedAt: project.lastUpdated,
+  // Normalise HypercertPayload into the shape the UI was built around
+  const project = {
+    id,
+    name:             payload.title,
+    description:      payload.description,
+    ecosystem:        "devspot",
+    confidence:       Math.round(payload.confidenceScore * 100),
+    verified:         payload.verifiedClaims.length,
+    flagged:          payload.flaggedClaims.length,
+    unresolved:       payload.openQuestions.length,
+    verifiedClaims:   payload.verifiedClaims.map((c) => ({
+      id:       c.id,
+      text:     c.text,
+      evidence: c.supportingEvidence,
+    })),
+    flaggedClaims:  payload.flaggedClaims.map((c) => ({
+      id:            c.id,
+      text:          c.text,
+      challengeType: c.challengeType,
+      objection:     c.objection,
+    })),
+    openQuestions:  payload.openQuestions.map((q) => ({
+      id:   q.claimId,
+      text: q.text,
+      note: q.objection,
+    })),
+    contributors:     payload.contributors.map((c) => c.name),
+    impactCategory:   payload.impactCategory,
+    workScopes:       payload.workScopes,
+    evaluatorSummary: payload.evaluatorSummary,
+    timeframe:        { start: payload.timeframeStart, end: payload.timeframeEnd },
+    lastUpdated:      payload.generatedAt,
+    atproto:          payload.atproto ?? null,
+    rkey:             payload.atproto?.activityUri ?? null,
+    sources:          payload.evidenceRefs.map((r) => ({
+      type: r.label.toLowerCase().includes("github") ? "github"
+          : r.label.toLowerCase().includes("website") ? "website"
+          : "document",
+      url:  r.url,
+    })),
+    storachaCids: {
+      evidence:    payload.storachaRefs.evidenceBundleCid,
+      adversarial: payload.storachaRefs.adversarialLogCid,
+      hypercert:   payload.storachaRefs.hypercertPayloadCid ?? "pending",
+    },
   };
+
+  const hypercertJson = payload;
 
   return (
     <div className="min-h-screen flex flex-col bg-white">
@@ -121,28 +169,36 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
               <ConfidenceRing value={project.confidence} />
 
               {/* Hyperscan badge */}
-              <a
-                href={project.atproto.hyperscanUrl}
-                target="_blank"
-                rel="noopener"
-                className="inline-flex items-center gap-2 text-xs font-medium text-white bg-[#0a0a0a] hover:bg-[#1f2937] transition-colors rounded-lg px-3.5 py-2"
-              >
-                <svg width="12" height="12" viewBox="0 0 18 18" fill="none">
-                  <rect x="1" y="1" width="6" height="6" rx="1.5" fill="currentColor" />
-                  <rect x="11" y="1" width="6" height="6" rx="1.5" fill="currentColor" opacity="0.4" />
-                  <rect x="1" y="11" width="6" height="6" rx="1.5" fill="currentColor" opacity="0.4" />
-                  <rect x="11" y="11" width="6" height="6" rx="1.5" fill="currentColor" />
-                </svg>
-                View on Hyperscan
-                <svg width="10" height="10" viewBox="0 0 10 10" fill="none" className="opacity-60">
-                  <path d="M2 8L8 2M8 2H4M8 2V6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              </a>
+              {project.atproto?.hyperscanUrl ? (
+                <a
+                  href={project.atproto.hyperscanUrl}
+                  target="_blank"
+                  rel="noopener"
+                  className="inline-flex items-center gap-2 text-xs font-medium text-white bg-[#0a0a0a] hover:bg-[#1f2937] transition-colors rounded-lg px-3.5 py-2"
+                >
+                  <svg width="12" height="12" viewBox="0 0 18 18" fill="none">
+                    <rect x="1" y="1" width="6" height="6" rx="1.5" fill="currentColor" />
+                    <rect x="11" y="1" width="6" height="6" rx="1.5" fill="currentColor" opacity="0.4" />
+                    <rect x="1" y="11" width="6" height="6" rx="1.5" fill="currentColor" opacity="0.4" />
+                    <rect x="11" y="11" width="6" height="6" rx="1.5" fill="currentColor" />
+                  </svg>
+                  View on Hyperscan
+                  <svg width="10" height="10" viewBox="0 0 10 10" fill="none" className="opacity-60">
+                    <path d="M2 8L8 2M8 2H4M8 2V6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </a>
+              ) : (
+                <span className="inline-flex items-center gap-2 text-xs font-medium text-[#9ca3af] border border-[#e5e7eb] rounded-lg px-3.5 py-2">
+                  ATProto pending
+                </span>
+              )}
 
               {/* ATProto URI */}
-              <p className="text-[10px] font-mono text-[#c4c8cf] max-w-[200px] break-all text-right hidden sm:block">
-                {project.rkey}
-              </p>
+              {project.rkey && (
+                <p className="text-[10px] font-mono text-[#c4c8cf] max-w-[200px] break-all text-right hidden sm:block">
+                  {project.rkey}
+                </p>
+              )}
             </div>
           </div>
         </div>
@@ -320,29 +376,29 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
         <section className="py-8 border-b border-[#e5e7eb]">
           <h2 className="text-xs font-semibold text-[#0a0a0a] uppercase tracking-wider mb-4">Agent Receipts</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {MOCK_AGENTS.map((agent) => (
+            {payload.evaluatedBy.map((agent) => (
               <Link
-                key={agent.slug}
-                href={`/agents/${agent.slug}`}
+                key={agent.role}
+                href={`/agents/${agent.role}`}
                 className="group border border-[#e5e7eb] rounded-xl px-4 py-4 bg-white hover:border-[#c8cacf] hover:shadow-sm transition-all"
               >
                 <div className="flex items-start gap-3">
                   <div className="w-7 h-7 rounded-lg bg-[#f3f4f6] flex items-center justify-center text-[#374151] shrink-0 group-hover:bg-[#e5e7eb] transition-colors">
-                    {AGENT_ICONS[agent.slug]}
+                    {AGENT_ICONS[agent.role]}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1.5 mb-2">
-                      <span className="text-xs font-semibold text-[#0a0a0a]">{agent.name}</span>
-                      <span className="text-[9px] font-mono text-[#9ca3af]">{agent.tag}</span>
+                      <span className="text-xs font-semibold text-[#0a0a0a] capitalize">{agent.role}</span>
+                      <span className="text-[9px] font-mono text-[#9ca3af]">agent</span>
                     </div>
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
                         <span className="text-[10px] font-mono text-[#9ca3af] w-16 shrink-0">Agent ID</span>
-                        <span className="text-[10px] font-mono text-[#374151]">#{agent.agentId}</span>
+                        <span className="text-[10px] font-mono text-[#374151] truncate">{agent.agentId}</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className="text-[10px] font-mono text-[#9ca3af] w-16 shrink-0">Storacha</span>
-                        <span className="text-[10px] font-mono text-[#374151] truncate">bafybeid…{agent.agentId}out</span>
+                        <span className="text-[10px] font-mono text-[#9ca3af] w-16 shrink-0">Registry</span>
+                        <span className="text-[10px] font-mono text-[#374151] truncate">{agent.agentRegistry.slice(0, 30)}…</span>
                       </div>
                       <div className="flex items-center gap-2">
                         <span className="text-[10px] font-mono text-[#9ca3af] w-16 shrink-0">Signed</span>
@@ -387,7 +443,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
             <h2 className="text-xs font-semibold text-[#0a0a0a] uppercase tracking-wider">Hypercert Payload</h2>
             <a
               href={`data:application/json;charset=utf-8,${encodeURIComponent(JSON.stringify(hypercertJson, null, 2))}`}
-              download={`${project.id}-hypercert.json`}
+              download={`${id}-hypercert.json`}
               className="inline-flex items-center gap-1.5 text-xs font-medium text-[#6b7280] hover:text-[#0a0a0a] border border-[#e5e7eb] hover:border-[#c8cacf] rounded-lg px-3 py-1.5 transition-all"
             >
               <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
@@ -404,7 +460,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
                 <span className="w-2.5 h-2.5 rounded-full bg-[#f3f4f6] border border-[#e5e7eb]" />
                 <span className="w-2.5 h-2.5 rounded-full bg-[#f3f4f6] border border-[#e5e7eb]" />
               </div>
-              <span className="text-[10px] font-mono text-[#9ca3af] ml-1">{project.id}-hypercert.json</span>
+              <span className="text-[10px] font-mono text-[#9ca3af] ml-1">{id}-hypercert.json</span>
             </div>
             <pre className="text-[11px] font-mono text-[#374151] p-4 overflow-x-auto leading-relaxed max-h-80 overflow-y-auto">
               {JSON.stringify(hypercertJson, null, 2)}

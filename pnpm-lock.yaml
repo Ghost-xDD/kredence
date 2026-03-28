@@ -69,6 +69,9 @@ importers:
       '@credence/agents':
         specifier: workspace:*
         version: link:../agents
+      '@credence/storage':
+        specifier: workspace:*
+        version: link:../storage
       '@credence/types':
         specifier: workspace:*
         version: link:../types

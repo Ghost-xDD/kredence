@@ -10,8 +10,12 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 config({ path: resolve(__dirname, "../../../.env") });
 
 import { createApp } from "./app.js";
+import { initRegistry } from "./registry-store.js";
 
 const PORT = parseInt(process.env["PORT"] ?? "3001", 10);
+
+// Seed in-memory registry from Storacha before accepting connections
+await initRegistry();
 
 const server = createApp();
 

@@ -5,14 +5,16 @@
  * and emits structured ServerMessages for every AgentLogEntry so the client
  * can render the run in real time.
  */
-import type { AdversarialLog, AgentLogEntry, AgentRole, EcosystemInput, HypercertPayload, ProjectRecord } from "@credence/types";
+import type { AdversarialLog, AgentLogEntry, AgentRole, EcosystemInput, HypercertPayload, ProjectRecord, RegistryEntry } from "@credence/types";
 import {
   runScoutAgent,
   runEvidenceAgent,
   runAdversarialAgent,
   runSynthesisAgent,
 } from "@credence/agents";
+import { updateRegistry } from "@credence/storage";
 import type { ServerMessage, PipelineSummary } from "./ws-types.js";
+import { getRegistryCid, setRegistry, getRegistry } from "./registry-store.js";
 
 export type EmitFn = (msg: ServerMessage) => void;
 
@@ -123,6 +125,48 @@ export async function runPipeline(
     for (const payload of synthesisResult.payloads) {
       if (payload) {
         emit({ type: "project_complete", runId, payload });
+      }
+    }
+
+    // ── Persist registry ───────────────────────────────────────────────────
+    const newEntries: RegistryEntry[] = synthesisResult.payloads
+      .filter((p): p is HypercertPayload => !!p && !!p.storachaRefs.hypercertPayloadCid)
+      .map((p) => ({
+        slug: p.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, ""),
+        cid:  p.storachaRefs.hypercertPayloadCid!,
+        title: p.title,
+        description: p.description,
+        confidenceScore: p.confidenceScore,
+        verifiedCount:  p.verifiedClaims.length,
+        flaggedCount:   p.flaggedClaims.length,
+        unresolvedCount: p.openQuestions.length,
+        impactCategory: p.impactCategory,
+        workScopes: p.workScopes,
+        contributors: p.contributors.map((c) => c.name),
+        hasAtproto: !!p.atproto,
+        atprotoUrl: p.atproto?.hyperscanUrl,
+        runId,
+        evaluatedAt: p.generatedAt,
+      }));
+
+    if (newEntries.length > 0) {
+      try {
+        const newCid = await updateRegistry(getRegistryCid(), newEntries);
+        const existing = getRegistry();
+        const slugSet = new Set(newEntries.map((e) => e.slug));
+        setRegistry(
+          {
+            updatedAt: new Date().toISOString(),
+            entries: [
+              ...existing.entries.filter((e) => !slugSet.has(e.slug)),
+              ...newEntries,
+            ],
+          },
+          newCid
+        );
+        console.log(`[pipeline][${runId}] registry updated — CID: ${newCid}`);
+      } catch (err) {
+        console.error(`[pipeline][${runId}] registry update failed:`, err);
       }
     }
 

@@ -31,6 +31,8 @@ import { WebSocketServer, WebSocket } from "ws";
 import { nanoid } from "nanoid";
 import { runPipeline } from "./pipeline.js";
 import type { ClientMessage, ServerMessage } from "./ws-types.js";
+import { getRegistry, findEntry, initRegistry } from "./registry-store.js";
+import { retrieveJSON } from "@credence/storage";
 
 const SERVER_VERSION = "0.1.0";
 
@@ -86,6 +88,29 @@ export function createApp() {
     const proto = req.headers["x-forwarded-proto"] === "https" ? "wss" : "ws";
     const host  = req.headers["x-forwarded-host"] ?? req.headers.host ?? "localhost";
     res.json({ url: `${proto}://${host}/ws` });
+  });
+
+  // ── Hypercert registry endpoints ────────────────────────────────────────
+
+  /** List all evaluated projects (compact registry entries). */
+  app.get("/projects", (_req, res) => {
+    res.json(getRegistry());
+  });
+
+  /** Full HypercertPayload for a specific project slug — fetched from Storacha. */
+  app.get("/projects/:slug", async (req, res) => {
+    const entry = findEntry(req.params.slug ?? "");
+    if (!entry) {
+      res.status(404).json({ error: "not found" });
+      return;
+    }
+    try {
+      const payload = await retrieveJSON(entry.cid, `hypercert-${entry.slug}.json`);
+      res.json(payload);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      res.status(502).json({ error: "failed to fetch from Storacha", detail: msg });
+    }
   });
 
   // ── HTTP server (WS attaches here) ──────────────────────────────────────
