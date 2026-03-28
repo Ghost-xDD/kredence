@@ -16,9 +16,7 @@
   },
   "dependencies": {
     "@credence/types": "workspace:*",
-    "@ucanto/core": "^10.4.6",
-    "@ucanto/principal": "^9.0.3",
-    "@web3-storage/w3up-client": "^16.0.0"
+    "@storacha/client": "^2.1.1"
   },
   "devDependencies": {
     "@types/node": "^20",

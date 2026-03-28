@@ -25,7 +25,7 @@ export async function uploadJSON(
 
   return {
     cid: cidStr,
-    url: `https://${cidStr}.ipfs.w3s.link/${filename}`,
+    url: `https://${cidStr}.ipfs.storacha.link/${filename}`,
   };
 }
 
@@ -47,7 +47,7 @@ export async function retrieveJSON<T = unknown>(
   cid: string,
   filename = "data.json"
 ): Promise<T> {
-  const url = `https://${cid}.ipfs.w3s.link/${filename}`;
+  const url = `https://${cid}.ipfs.storacha.link/${filename}`;
   const res = await fetch(url);
 
   if (!res.ok) {
@@ -63,7 +63,7 @@ export async function retrieveJSON<T = unknown>(
  */
 export async function verifyCID(cid: string, filename = "data.json"): Promise<boolean> {
   try {
-    const url = `https://${cid}.ipfs.w3s.link/${filename}`;
+    const url = `https://${cid}.ipfs.storacha.link/${filename}`;
     const res = await fetch(url, { method: "HEAD" });
     return res.ok;
   } catch {
