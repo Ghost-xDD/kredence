@@ -15,6 +15,7 @@
     "dev": "tsc --watch"
   },
   "dependencies": {
+    "@atproto/api": "^0.19.5",
     "@credence/storage": "workspace:*",
     "@credence/types": "workspace:*",
     "@langchain/community": "^1.1.25",
