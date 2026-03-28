@@ -59,6 +59,12 @@ function printPayload(payload: HypercertPayload, index: number) {
   console.log(`   Hypercert CID: ${payload.storachaRefs.hypercertPayloadCid ?? "not stored"}`);
   console.log(`   Evidence CID:  ${payload.storachaRefs.evidenceBundleCid}`);
   console.log(`   Adversarial CID: ${payload.storachaRefs.adversarialLogCid}`);
+  if (payload.atproto) {
+    console.log(`   ATProto URI:   ${payload.atproto.activityUri}`);
+    console.log(`   Hyperscan:     ${payload.atproto.hyperscanUrl}`);
+  } else {
+    console.log(`   ATProto:       not published (set HYPERCERTS_HANDLE + HYPERCERTS_APP_PASSWORD)`);
+  }
 
   if (payload.flaggedClaims.length > 0) {
     console.log(`\n   Flagged claims:`);
@@ -175,8 +181,15 @@ async function main() {
 
   separator("Pipeline Complete");
   const stored = synthesisResult.projects.filter((p) => p.hypercertPayloadCid).length;
-  console.log(`  ✓ Scout → Evidence → Adversarial → Synthesis`);
+  const published = synthesisResult.payloads.filter((p) => p.atproto).length;
+  console.log(`  ✓ Scout → Evidence → Adversarial → Synthesis → Hypercerts`);
   console.log(`  ✓ ${stored}/${MAX_PROJECTS} hypercert payloads stored on Storacha`);
+  console.log(`  ✓ ${published}/${MAX_PROJECTS} hypercerts published to ATProto network`);
+  if (published > 0) {
+    synthesisResult.payloads
+      .filter((p) => p.atproto)
+      .forEach((p) => console.log(`    → ${p.atproto!.hyperscanUrl}`));
+  }
   console.log(`  ✓ All artifacts content-addressed and retrievable`);
   console.log(`  ✓ ERC-8004 agent identities: Scout 3040, Evidence 3041, Adversarial 3042, Synthesis 3043`);
   console.log();

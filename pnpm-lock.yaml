@@ -69,9 +69,6 @@ importers:
 
   packages/agents:
     dependencies:
-      '@atproto/api':
-        specifier: ^0.19.5
-        version: 0.19.5
       '@credence/storage':
         specifier: workspace:*
         version: link:../storage
@@ -149,27 +146,6 @@ packages:
 
   '@anthropic-ai/sdk@0.27.3':
     resolution: {integrity: sha512-IjLt0gd3L4jlOfilxVXTifn42FnVffMgDC04RJK1KDZpmkBWLv0XC92MVVmkxrFZNS/7l3xWgP/I3nqtX1sQHw==}
-
-  '@atproto/api@0.19.5':
-    resolution: {integrity: sha512-u6R5TecYJDO8l8QFN09AMuJASYnUkJ4HhYE5hg4/dha/z14a+OAil2/dli/208uM5AHPFLtlnB8kIK9XU5GgQQ==}
-
-  '@atproto/common-web@0.4.19':
-    resolution: {integrity: sha512-3BTi58p5WpT+9/zb6UZrdsXcfPo5P45UJm0E4iwHLILr+jc37CuBj9JReDSZ4U0i9RTrI3ZkfySyZ9bd+LnMsw==}
-
-  '@atproto/lex-data@0.0.14':
-    resolution: {integrity: sha512-53DUa9664SS76nGAMYopWsO10OH0AAdf7P/HSKB6Wzx3iqe6lk/K61QZnKxOG1LreYl5CfvIJU6eNf4txI6GlQ==}
-
-  '@atproto/lex-json@0.0.14':
-    resolution: {integrity: sha512-6lPkDKqe7teEu4WrN5q7400cvZKgYS3uwUMvzG3F9XkgVYhOwSDCtouV/nSLBbpvo3l9OP0kiigtclcNcyekww==}
-
-  '@atproto/lexicon@0.6.2':
-    resolution: {integrity: sha512-p3Ly6hinVZW0ETuAXZMeUGwuMm3g8HvQMQ41yyEE6AL0hAkfeKFaZKos6BdBrr6CjkpbrDZqE8M+5+QOceysMw==}
-
-  '@atproto/syntax@0.5.2':
-    resolution: {integrity: sha512-W41szOnkppoHr0iCUrzL8gy3OD6qmDyp1UvUgmTx2oFQfgbudpz51T/gznesiCcqiUT5obfHdx4PJ+WdlEOE7Q==}
-
-  '@atproto/xrpc@0.7.7':
-    resolution: {integrity: sha512-K1ZyO/BU8JNtXX5dmPp7b5UrkLMMqpsIa/Lrj5D3Su+j1Xwq1m6QJ2XJ1AgjEjkI1v4Muzm7klianLE6XGxtmA==}
 
   '@borewit/text-codec@0.2.2':
     resolution: {integrity: sha512-DDaRehssg1aNrH4+2hnj1B7vnUGEjU6OIlyRdkMd0aUdIUvKXrJfXsy8LVtXAy7DRvYVluWbMspsRhz2lcW0mQ==}
@@ -1613,9 +1589,6 @@ packages:
     resolution: {integrity: sha512-wvUjBtSGN7+7SjNpq/9M2Tg350UZD3q62IFZLbRAR1bSMlCo1ZaeW+BJ+D090e4hIIZLBcTDWe4Mh4jvUDajzQ==}
     engines: {node: '>= 0.4'}
 
-  await-lock@2.2.2:
-    resolution: {integrity: sha512-aDczADvlvTGajTDjcjpJMqRkOF6Qdz3YbPZm/PyW6tKPkx2hlYBzxMhEywM/tU72HrVZjgl5VCdRuMlA7pZ8Gw==}
-
   axe-core@4.11.1:
     resolution: {integrity: sha512-BASOg+YwO2C+346x3LZOeoovTIoTrRqEsqMa6fmfAV0P+U9mFr9NsyOEpiYvFjbc64NMrSswhV50WdXzdb/Z5A==}
     engines: {node: '>=4'}
@@ -2430,9 +2403,6 @@ packages:
   isexe@2.0.0:
     resolution: {integrity: sha512-RHxMLp9lnKHGHRng9QFhRCMbYAcVpn69smSGcq3f36xjgVVWThj4qqLbTLlq7Ssj8B+fIQ1EuCEGI2lKsyQeIw==}
 
-  iso-datestring-validator@2.2.2:
-    resolution: {integrity: sha512-yLEMkBbLZTlVQqOnQ4FiMujR6T4DEcCb1xizmvXS+OxuhwcbtynoosRzdMA69zZCShCNAbi+gJ71FxZBBXx1SA==}
-
   iso-url@1.2.1:
     resolution: {integrity: sha512-9JPDgCN4B7QPkLtYAAOrEuAWvP9rWvR5offAr0/SeF046wIkglqH3VXgYYP6NcsKslH80UIVgmPqNe3j7tG2ng==}
     engines: {node: '>=12'}
@@ -2651,9 +2621,6 @@ packages:
 
   multiformats@13.4.2:
     resolution: {integrity: sha512-eh6eHCrRi1+POZ3dA+Dq1C6jhP1GNtr9CRINMb67OKzqW9I5DUuZM/3jLPlzhgpGeiNUlEGEbkCYChXMCc/8DQ==}
-
-  multiformats@9.9.0:
-    resolution: {integrity: sha512-HoMUjhH9T8DDBNT+6xzkrd9ga/XiBI4xLr58LJACwK6G3HTOPeMz4nB4KJs33L2BelrIJa7P0VuNaVF3hMYfjg==}
 
   murmurhash3js-revisited@3.0.0:
     resolution: {integrity: sha512-/sF3ee6zvScXMb1XFJ8gDsSnY+X8PbOyjIuBhtgis10W2Jx4ZjIhikUCIF9c4gpJxVnQIsPAFrSwTCuAjicP6g==}
@@ -3264,10 +3231,6 @@ packages:
     resolution: {integrity: sha512-j2Zq4NyQYG5XMST4cbs02Ak8iJUdxRM0XI5QyxXuZOzKOINmWurp3smXu3y5wDcJrptwpSjgXHzIQxR0omXljQ==}
     engines: {node: '>=12.0.0'}
 
-  tlds@1.261.0:
-    resolution: {integrity: sha512-QXqwfEl9ddlGBaRFXIvNKK6OhipSiLXuRuLJX5DErz0o0Q0rYxulWLdFryTkV5PkdZct5iMInwYEGe/eR++1AA==}
-    hasBin: true
-
   to-regex-range@5.0.1:
     resolution: {integrity: sha512-65P7iz6X5yEr1cwcgvQxbbIw7Uk3gOy5dIdtZ4rDveLqhrdJP+Li/Hx6tyK0NEb+2GCyneCMJiGqrADCSNk8sQ==}
     engines: {node: '>=8.0'}
@@ -3362,9 +3325,6 @@ packages:
   uint8arraylist@2.4.8:
     resolution: {integrity: sha512-vc1PlGOzglLF0eae1M8mLRTBivsvrGsdmJ5RbK3e+QRvRLOZfZhQROTwH/OfyF3+ZVUg9/8hE8bmKP2CvP9quQ==}
 
-  uint8arrays@3.0.0:
-    resolution: {integrity: sha512-HRCx0q6O9Bfbp+HHSfQQKD7wU70+lydKVt4EghkdOvlK/NlrF90z+eXV34mUd48rNvVJXwkrMSPpCATkct8fJA==}
-
   uint8arrays@5.1.0:
     resolution: {integrity: sha512-vA6nFepEmlSKkMBnLBaUMVvAC4G3CTmO58C12y4sq6WPDOR7mOFYOi7GlrQ4djeSbP6JG9Pv9tJDM97PedRSww==}
 
@@ -3377,9 +3337,6 @@ packages:
 
   undici-types@6.21.0:
     resolution: {integrity: sha512-iwDZqg0QAGrg9Rav5H4n0M64c3mkR59cJ6wQp+7C4nI0gsmExaedaYLNO44eT4AtBBwjbTiGPMlt2Md0T9H9JQ==}
-
-  unicode-segmenter@0.14.5:
-    resolution: {integrity: sha512-jHGmj2LUuqDcX3hqY12Ql+uhUTn8huuxNZGq7GvtF6bSybzH3aFgedYu/KTzQStEgt1Ra2F3HxadNXsNjb3m3g==}
 
   universal-user-agent@7.0.3:
     resolution: {integrity: sha512-TmnEAEAsBJVZM/AADELsK76llnwcf9vMKuPz8JflO1frO8Lchitr0fNaN9d+Ap0BjKtqWqd/J17qeDnXh8CL2A==}
@@ -3503,9 +3460,6 @@ packages:
     peerDependencies:
       zod: ^3.25.28 || ^4
 
-  zod@3.25.76:
-    resolution: {integrity: sha512-gzUt/qt81nXsFGKIFcC3YnfEAx5NkunCfnDlvuBSSFS02bcXu4Lmea0AFIUwbLWxWPx3d9p8S5QoaujKcNQxcQ==}
-
   zod@4.3.6:
     resolution: {integrity: sha512-rftlrkhHZOcjDwkGlnUtZZkvaPHCsDATp4pGpuOOMDaTdDDXF91wuVDJoWoPsKX/3YPQ5fHuF3STjcYyKr+Qhg==}
 
@@ -3526,53 +3480,6 @@ snapshots:
       node-fetch: 2.7.0(encoding@0.1.13)
     transitivePeerDependencies:
       - encoding
-
-  '@atproto/api@0.19.5':
-    dependencies:
-      '@atproto/common-web': 0.4.19
-      '@atproto/lexicon': 0.6.2
-      '@atproto/syntax': 0.5.2
-      '@atproto/xrpc': 0.7.7
-      await-lock: 2.2.2
-      multiformats: 9.9.0
-      tlds: 1.261.0
-      zod: 3.25.76
-
-  '@atproto/common-web@0.4.19':
-    dependencies:
-      '@atproto/lex-data': 0.0.14
-      '@atproto/lex-json': 0.0.14
-      '@atproto/syntax': 0.5.2
-      zod: 3.25.76
-
-  '@atproto/lex-data@0.0.14':
-    dependencies:
-      multiformats: 9.9.0
-      tslib: 2.8.1
-      uint8arrays: 3.0.0
-      unicode-segmenter: 0.14.5
-
-  '@atproto/lex-json@0.0.14':
-    dependencies:
-      '@atproto/lex-data': 0.0.14
-      tslib: 2.8.1
-
-  '@atproto/lexicon@0.6.2':
-    dependencies:
-      '@atproto/common-web': 0.4.19
-      '@atproto/syntax': 0.5.2
-      iso-datestring-validator: 2.2.2
-      multiformats: 9.9.0
-      zod: 3.25.76
-
-  '@atproto/syntax@0.5.2':
-    dependencies:
-      tslib: 2.8.1
-
-  '@atproto/xrpc@0.7.7':
-    dependencies:
-      '@atproto/lexicon': 0.6.2
-      zod: 3.25.76
 
   '@borewit/text-codec@0.2.2': {}
 
@@ -4727,8 +4634,6 @@ snapshots:
     dependencies:
       possible-typed-array-names: 1.1.0
 
-  await-lock@2.2.2: {}
-
   axe-core@4.11.1: {}
 
   axios@1.14.0(debug@4.4.3):
@@ -5729,8 +5634,6 @@ snapshots:
 
   isexe@2.0.0: {}
 
-  iso-datestring-validator@2.2.2: {}
-
   iso-url@1.2.1: {}
 
   isows@1.0.7(ws@8.18.3):
@@ -5944,8 +5847,6 @@ snapshots:
   ms@2.1.3: {}
 
   multiformats@13.4.2: {}
-
-  multiformats@9.9.0: {}
 
   murmurhash3js-revisited@3.0.0: {}
 
@@ -6626,8 +6527,6 @@ snapshots:
       fdir: 6.5.0(picomatch@4.0.4)
       picomatch: 4.0.4
 
-  tlds@1.261.0: {}
-
   to-regex-range@5.0.1:
     dependencies:
       is-number: 7.0.0
@@ -6739,10 +6638,6 @@ snapshots:
     dependencies:
       uint8arrays: 5.1.0
 
-  uint8arrays@3.0.0:
-    dependencies:
-      multiformats: 9.9.0
-
   uint8arrays@5.1.0:
     dependencies:
       multiformats: 13.4.2
@@ -6757,8 +6652,6 @@ snapshots:
   undici-types@5.26.5: {}
 
   undici-types@6.21.0: {}
-
-  unicode-segmenter@0.14.5: {}
 
   universal-user-agent@7.0.3: {}
 
@@ -6903,7 +6796,5 @@ snapshots:
   zod-to-json-schema@3.25.2(zod@4.3.6):
     dependencies:
       zod: 4.3.6
-
-  zod@3.25.76: {}
 
   zod@4.3.6: {}
