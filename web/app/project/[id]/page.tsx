@@ -91,7 +91,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
     id,
     name:             payload.title,
     description:      payload.description,
-    ecosystem:        "devspot",
+    ecosystem:        payload.evidenceRefs.some((r) => r.label.toLowerCase().includes("github")) ? "github" : "evaluated",
     confidence:       Math.round(payload.confidenceScore * 100),
     verified:         payload.verifiedClaims.length,
     flagged:          payload.flaggedClaims.length,

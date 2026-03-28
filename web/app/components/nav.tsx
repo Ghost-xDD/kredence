@@ -29,7 +29,7 @@ export function Nav() {
             <rect x="11" y="11" width="6" height="6" rx="1.5" fill="#0a0a0a" />
           </svg>
           <span className="font-semibold text-sm tracking-tight text-[#0a0a0a]">
-            Credence
+            Kredence
           </span>
         </Link>
 

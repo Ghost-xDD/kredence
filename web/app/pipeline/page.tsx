@@ -15,7 +15,8 @@ type EcosystemInput =
   | { kind: "devspot"; url: string }
   | { kind: "filecoin-devgrants"; repo: string; labels?: string[] }
   | { kind: "ethglobal"; eventSlug: string }
-  | { kind: "manual"; urls: string[] };
+  | { kind: "manual"; urls: string[] }
+  | { kind: "github-repo"; repoUrl: string; installationId?: number };
 
 type PipelineEvent = {
   id: string;
