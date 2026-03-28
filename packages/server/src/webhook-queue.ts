@@ -7,7 +7,7 @@
 import { nanoid } from "nanoid";
 import { runPipeline } from "./pipeline.js";
 import { getInstallationOctokit, parseRepo, writeHypercertJson, openBadgePr } from "./github-app.js";
-import { findEntry } from "./registry-store.js";
+import { getRegistry } from "./registry-store.js";
 
 export type WebhookJob = {
   owner: string;
@@ -71,13 +71,11 @@ async function writeBack(job: WebhookJob, runId: string): Promise<void> {
     return;
   }
 
-  // Find the registry entry produced by this pipeline run
-  const repoName = `${parsed.owner}/${parsed.repo}`;
-  const slug = repoName.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
-  const entry = findEntry(slug);
-
+  // Find the registry entry produced by this specific run (slug = project title,
+  // NOT the repo name — so we match by runId which is always exact).
+  const entry = getRegistry().entries.find((e) => e.runId === runId);
   if (!entry) {
-    console.warn(`[webhook-queue][${runId}] no registry entry found for slug "${slug}" — skipping write-back`);
+    console.warn(`[webhook-queue][${runId}] no registry entry found for runId — skipping write-back`);
     return;
   }
 
