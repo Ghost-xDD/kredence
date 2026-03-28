@@ -69,15 +69,28 @@ export async function runAgent<TInput, TOutput>(
   clearTimeout(budgetTimer);
   const durationMs = Date.now() - startMs;
 
-  // Persist output artifact
+  // Persist output artifact — non-fatal if upload fails (main artifact may already be stored)
   logger.log("info", "submit", "agent:persisting-output");
-  const { cid: outputCid } = await uploadJSON(result.output, `${role}-output.json`);
-
-  // Persist execution log
-  const log = logger.flush(exitStatus);
-  const { cid: logCid } = await uploadJSON(log, "agent_log.json");
+  let outputCid = "upload-failed";
+  let logCid = "upload-failed";
+  try {
+    ({ cid: outputCid } = await uploadJSON(result.output, `${role}-output.json`));
+    const log = logger.flush(exitStatus);
+    ({ cid: logCid } = await uploadJSON(log, "agent_log.json"));
+  } catch (uploadErr) {
+    logger.log("warn", "submit", "agent:upload-failed", {
+      error: uploadErr instanceof Error ? uploadErr.message : String(uploadErr),
+    });
+    const log = logger.flush("partial");
+    try {
+      ({ cid: logCid } = await uploadJSON(log, "agent_log.json"));
+    } catch {
+      // best-effort log upload
+    }
+  }
 
   logger.log("info", "submit", "agent:done", { outputCid, logCid, durationMs });
+
 
   const agentOutput: AgentOutput = {
     agentId: identity.agentId,

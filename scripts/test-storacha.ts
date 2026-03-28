@@ -5,7 +5,12 @@
  *   1. Copy .env.example to .env and fill in STORACHA_PRINCIPAL + STORACHA_PROOF
  *   2. Run: pnpm test:storacha
  */
-import "dotenv/config";
+import { config } from "dotenv";
+import { resolve } from "path";
+import { fileURLToPath } from "url";
+
+const __dirname = fileURLToPath(new URL(".", import.meta.url));
+config({ path: resolve(__dirname, "../.env") });
 
 // Import directly from built dist to avoid ESM/CJS resolution issues in root scripts
 import { uploadJSON, retrieveJSON, verifyCID } from "../packages/storage/dist/index.js";

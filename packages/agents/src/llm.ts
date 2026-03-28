@@ -32,12 +32,14 @@ export async function structuredLLMCall<T extends z.ZodTypeAny>(params: {
     apiKey: process.env["OPENAI_API_KEY"],
   });
 
-  const structured = llm.withStructuredOutput(params.schema, {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const structured = llm.withStructuredOutput(params.schema as any, {
     name: params.schemaName,
   });
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return structured.invoke([
     { role: "system", content: params.system },
     { role: "user", content: params.user },
-  ]);
+  ]) as Promise<z.infer<T>>;
 }
