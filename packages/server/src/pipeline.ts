@@ -5,7 +5,7 @@
  * and emits structured ServerMessages for every AgentLogEntry so the client
  * can render the run in real time.
  */
-import type { AgentLogEntry, AgentRole, EcosystemInput } from "@credence/types";
+import type { AdversarialLog, AgentLogEntry, AgentRole, EcosystemInput, HypercertPayload, ProjectRecord } from "@credence/types";
 import {
   runScoutAgent,
   runEvidenceAgent,
@@ -88,8 +88,8 @@ export async function runPipeline(
     const selected = manifest.projects
       .filter(
         (p) =>
-          p.sources.some((s) => s.type === "github") &&
-          p.sources.some((s) => s.type === "website")
+          p.sources.some((s: { type: string; url: string }) => s.type === "github") &&
+          p.sources.some((s: { type: string; url: string }) => s.type === "website")
       )
       .slice(0, maxProjects);
 
@@ -127,14 +127,14 @@ export async function runPipeline(
     }
 
     // Final summary
-    const totalVerified = adversarialResult.logs.reduce((s, l) => s + l.verifiedCount, 0);
-    const totalFlagged  = adversarialResult.logs.reduce((s, l) => s + l.flaggedCount, 0);
-    const totalUnresolved = adversarialResult.logs.reduce((s, l) => s + l.unresolvedCount, 0);
+    const totalVerified   = adversarialResult.logs.reduce((s: number, l: AdversarialLog) => s + l.verifiedCount, 0);
+    const totalFlagged    = adversarialResult.logs.reduce((s: number, l: AdversarialLog) => s + l.flaggedCount, 0);
+    const totalUnresolved = adversarialResult.logs.reduce((s: number, l: AdversarialLog) => s + l.unresolvedCount, 0);
 
     const summary: PipelineSummary = {
       projectsEvaluated:  selected.length,
-      hypercertsStored:   synthesisResult.projects.filter((p) => p.hypercertPayloadCid).length,
-      atprotoPublished:   synthesisResult.payloads.filter((p) => p?.atproto).length,
+      hypercertsStored:   synthesisResult.projects.filter((p: ProjectRecord) => p.hypercertPayloadCid).length,
+      atprotoPublished:   synthesisResult.payloads.filter((p: HypercertPayload | undefined) => p?.atproto).length,
       totalVerified,
       totalFlagged,
       totalUnresolved,

@@ -1,5 +1,6 @@
 [build]
-dockerfilePath = "packages/server/Dockerfile"
+builder = "NIXPACKS"
+buildCommand = "pnpm --filter @credence/types build && pnpm --filter @credence/storage build && pnpm --filter @credence/agents build && pnpm --filter @credence/server build"
 
 [deploy]
 startCommand = "node packages/server/dist/index.js"
