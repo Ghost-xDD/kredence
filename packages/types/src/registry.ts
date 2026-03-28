@@ -4,6 +4,8 @@ export type RegistryEntry = {
   slug: string;
   /** Storacha CID of the full HypercertPayload JSON file. */
   cid: string;
+  /** Filename within the Storacha directory CID (e.g. "hypercert-abc123.json"). */
+  filename: string;
   title: string;
   description: string;
   /** 0–1 */

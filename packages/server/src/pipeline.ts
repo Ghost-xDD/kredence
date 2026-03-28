@@ -129,11 +129,21 @@ export async function runPipeline(
     }
 
     // ── Persist registry ───────────────────────────────────────────────────
+    // Zip projects + payloads (parallel arrays) so we retain the original
+    // project.id needed to reconstruct the Storacha filename.
     const newEntries: RegistryEntry[] = synthesisResult.payloads
-      .filter((p): p is HypercertPayload => !!p && !!p.storachaRefs.hypercertPayloadCid)
-      .map((p) => ({
+      .map((p, i) => ({ payload: p, project: synthesisResult.projects[i] }))
+      .filter(
+        (pair): pair is { payload: HypercertPayload; project: ProjectRecord } =>
+          !!pair.payload &&
+          !!pair.payload.storachaRefs.hypercertPayloadCid &&
+          !!pair.project
+      )
+      .map(({ payload: p, project }) => ({
         slug: p.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, ""),
         cid:  p.storachaRefs.hypercertPayloadCid!,
+        // The synthesis agent uploads as `hypercert-${project.id}.json` — must match exactly.
+        filename: `hypercert-${project.id}.json`,
         title: p.title,
         description: p.description,
         confidenceScore: p.confidenceScore,

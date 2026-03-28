@@ -105,7 +105,10 @@ export function createApp() {
       return;
     }
     try {
-      const payload = await retrieveJSON(entry.cid, `hypercert-${entry.slug}.json`);
+      // `filename` was added after the initial release — fall back to slug-based
+      // name for legacy entries that predate the field.
+      const filename = entry.filename ?? `hypercert-${entry.slug}.json`;
+      const payload = await retrieveJSON(entry.cid, filename);
       res.json(payload);
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
