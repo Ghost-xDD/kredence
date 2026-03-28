@@ -74,7 +74,17 @@ export function createApp() {
       methods: ["GET", "POST", "OPTIONS"],
     })
   );
-  app.use(express.json());
+
+  // Webhook route needs the raw body Buffer for HMAC verification — must be
+  // registered before the global express.json() middleware so the stream is
+  // not consumed first.
+  app.use("/webhook/github", express.raw({ type: "application/json" }));
+
+  // All other routes get the parsed JSON body.
+  app.use((req, _res, next) => {
+    if (req.path === "/webhook/github") return next();
+    express.json()(req, _res, next);
+  });
 
   // ── REST endpoints ──────────────────────────────────────────────────────
 
@@ -151,7 +161,7 @@ export function createApp() {
    *
    * Required env var: GITHUB_APP_WEBHOOK_SECRET
    */
-  app.post("/webhook/github", express.raw({ type: "application/json" }), (req, res) => {
+  app.post("/webhook/github", (req, res) => {
     const secret = process.env["GITHUB_APP_WEBHOOK_SECRET"];
     if (!secret) {
       res.status(503).json({ error: "GITHUB_APP_WEBHOOK_SECRET not configured" });
