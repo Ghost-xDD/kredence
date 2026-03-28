@@ -148,12 +148,20 @@ export async function scrapeDevspot(hackathonUrl: string): Promise<DevspotProjec
     const projectUrl = item.project_url ?? "";
     const demoUrl = item.demo_url ?? "";
 
+    const MEDIA_EXTENSIONS = /\.(mp4|webm|mov|avi|mkv|mp3|pdf|zip|tar|gz)(\?.*)?$/i;
+
     if (projectUrl) {
       const isGitHub = projectUrl.includes("github.com");
-      sources.push({ type: isGitHub ? "github" : "website", url: projectUrl });
+      const isMedia = MEDIA_EXTENSIONS.test(projectUrl);
+      if (!isMedia) {
+        sources.push({ type: isGitHub ? "github" : "website", url: projectUrl });
+      }
     }
     if (demoUrl && demoUrl !== projectUrl) {
-      sources.push({ type: "website", url: demoUrl });
+      const isMedia = MEDIA_EXTENSIONS.test(demoUrl);
+      if (!isMedia) {
+        sources.push({ type: "website", url: demoUrl });
+      }
     }
 
     // Confirmed members only; prefer full_name, fall back to slug
