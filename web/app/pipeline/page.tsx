@@ -143,6 +143,63 @@ function stringify(val: unknown): string {
   try { return JSON.stringify(val); } catch { return String(val); }
 }
 
+/** Compact human-readable summary of a tool value for the event feed display. */
+function formatValue(val: unknown, depth = 0): string {
+  if (val === null || val === undefined) return "";
+
+  if (typeof val === "string") return val.length > 120 ? `${val.slice(0, 117)}…` : val;
+  if (typeof val === "number" || typeof val === "boolean") return String(val);
+
+  if (Array.isArray(val)) {
+    const n = val.length;
+    if (n === 0) return "0 items";
+    const first = val[0] as Record<string, unknown> | undefined;
+    if (first && typeof first === "object") {
+      if ("ecosystemKind" in first || ("name" in first && "sources" in first))
+        return `${n} project${n !== 1 ? "s" : ""} discovered`;
+      if ("claimId" in first && "outcome" in first) {
+        const verified = (val as { outcome: string }[]).filter((c) => c.outcome === "verified").length;
+        return `${n} claims · ${verified} verified · ${n - verified} flagged`;
+      }
+      if ("id" in first && "text" in first && "sourceType" in first)
+        return `${n} claim${n !== 1 ? "s" : ""} extracted`;
+      const label = String(first.name ?? first.title ?? first.text ?? "").slice(0, 60);
+      return label ? `${label}${n > 1 ? ` +${n - 1}` : ""}` : `${n} items`;
+    }
+    return `${n} items`;
+  }
+
+  if (typeof val === "object") {
+    const obj = val as Record<string, unknown>;
+    // Unwrap single-key wrappers like { url: "..." } or { project: {...} }
+    const keys = Object.keys(obj);
+    if (keys.length === 1 && depth === 0) {
+      return formatValue(obj[keys[0]!], 1);
+    }
+    // Prefer meaningful fields
+    if ("title" in obj)   return String(obj.title).slice(0, 100);
+    if ("name"  in obj)   return String(obj.name).slice(0, 100);
+    if ("url"   in obj)   return String(obj.url).slice(0, 120);
+    if ("action" in obj)  return String(obj.action).slice(0, 100);
+    return `{${keys.slice(0, 3).join(", ")}${keys.length > 3 ? ", …" : ""}}`;
+  }
+
+  return String(val).slice(0, 120);
+}
+
+function formatOutput(raw: string): string {
+  if (!raw) return "";
+  try { return formatValue(JSON.parse(raw) as unknown); }
+  catch { return raw.length > 120 ? `${raw.slice(0, 117)}…` : raw; }
+}
+
+// Internal housekeeping actions that add no signal to the feed
+const NOISE_ACTIONS = new Set([
+  "agent:start", "agent:done", "agent:output-ready", "agent:persisting-output",
+  "scout:adapter-devspot", "synthesis:start", "synthesis:llm-start", "synthesis:llm-done",
+  "synthesis:storing-payload", "adversarial:start", "evidence:start",
+]);
+
 // ── Component ──────────────────────────────────────────────────────────────
 
 export default function PipelinePage() {
@@ -363,7 +420,7 @@ export default function PipelinePage() {
         case "tool_call": {
           addEvent({ agent: msg.agent, phase: msg.phase as Phase, type: "tool-call",
             message: msg.tool,
-            toolCall: { name: msg.tool, input: stringify(msg.input) } });
+            toolCall: { name: msg.tool, input: formatValue(msg.input) } });
           setActivePhase(msg.phase as Phase);
           setActiveTool(msg.tool);
           setActiveAction(`↳ ${msg.tool}`);
@@ -376,7 +433,7 @@ export default function PipelinePage() {
             message: msg.tool,
             toolCall: { name: msg.tool, output: out, durationMs: msg.durationMs } });
           setActiveTool(null);
-          setActiveAction(`✓ ${msg.tool} — ${out.slice(0, 80)}`);
+          setActiveAction(`✓ ${msg.tool} — ${formatOutput(out)}`);
 
           // Evidence source count
           if (msg.agent === "evidence") {
@@ -710,6 +767,7 @@ export default function PipelinePage() {
 
                 {events.map((ev) => {
                   if (ev.type === "project-complete") return null;
+                  if (ev.type === "log" && NOISE_ACTIONS.has(ev.message)) return null;
 
                   if (ev.type === "handover") {
                     return (
@@ -768,7 +826,9 @@ export default function PipelinePage() {
                         {isToolDone && (
                           <div>
                             <span className="text-[#9ca3af]">  ✓ </span>
-                            <span className="text-[#6b7280]">{ev.toolCall?.output}</span>
+                            <span className="text-[#6b7280]">
+                              {formatOutput(ev.toolCall?.output ?? "")}
+                            </span>
                             {ev.toolCall?.durationMs && (
                               <span className="text-[#c4c8cf] ml-2">{ev.toolCall.durationMs}ms</span>
                             )}
