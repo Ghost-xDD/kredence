@@ -3,13 +3,19 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import { Nav } from "../components/nav";
-import { MOCK_PROJECTS } from "../lib/mock-data";
 
-// ── Types ──────────────────────────────────────────────────────────────────
+// ── Local types (mirror @credence/types without bundling them client-side) ──
 
-type Agent = "system" | "scout" | "evidence" | "adversarial" | "synthesis";
+type AgentRole = "scout" | "evidence" | "adversarial" | "synthesis";
+type Agent = "system" | AgentRole;
 type Phase = "discover" | "plan" | "execute" | "verify" | "submit";
 type EventType = "log" | "tool-call" | "tool-done" | "handover" | "project-complete";
+
+type EcosystemInput =
+  | { kind: "devspot"; url: string }
+  | { kind: "filecoin-devgrants"; repo: string; labels?: string[] }
+  | { kind: "ethglobal"; eventSlug: string }
+  | { kind: "manual"; urls: string[] };
 
 type PipelineEvent = {
   id: string;
@@ -23,136 +29,47 @@ type PipelineEvent = {
   projectId?: string;
 };
 
-// ── Scripted simulation events ─────────────────────────────────────────────
+type CompletedProject = {
+  id: string;
+  name: string;
+  confidence: number;
+  verified: number;
+  flagged: number;
+  hasAtproto: boolean;
+};
 
-const EVENTS: PipelineEvent[] = [
-  { id: "s0",  elapsed: 0,     agent: "system",      phase: "discover", type: "log",          message: "Pipeline started · PL Genesis Hackathon (Devspot)" },
-  { id: "s1",  elapsed: 200,   agent: "scout",       phase: "discover", type: "log",          message: "Selecting adapter for devspot ecosystem" },
-  { id: "s2",  elapsed: 500,   agent: "scout",       phase: "plan",     type: "log",          message: "Adapter: scrape_devspot_hackathon" },
-  { id: "s3",  elapsed: 700,   agent: "scout",       phase: "execute",  type: "tool-call",    message: "scrape_devspot_hackathon",
-    toolCall: { name: "scrape_devspot_hackathon", input: "pl-genesis-frontiers-of-collaboration-hackathon.devspot.app/?activeTab=projects" } },
-  { id: "s4",  elapsed: 1400,  agent: "scout",       phase: "execute",  type: "log",          message: "Page 1 fetched — 24 projects" },
-  { id: "s5",  elapsed: 2100,  agent: "scout",       phase: "execute",  type: "log",          message: "Page 2 fetched — 24 projects" },
-  { id: "s6",  elapsed: 2800,  agent: "scout",       phase: "execute",  type: "log",          message: "Page 3 fetched — 24 projects" },
-  { id: "s7",  elapsed: 3500,  agent: "scout",       phase: "execute",  type: "log",          message: "Page 4 fetched — 24 projects" },
-  { id: "s8",  elapsed: 4000,  agent: "scout",       phase: "execute",  type: "tool-done",    message: "scrape_devspot_hackathon",
-    toolCall: { name: "scrape_devspot_hackathon", output: "178 projects discovered", durationMs: 3300 } },
-  { id: "s9",  elapsed: 4300,  agent: "scout",       phase: "verify",   type: "log",          message: "Deduplicating by GitHub URL — 178 → 174 unique" },
-  { id: "s10", elapsed: 4700,  agent: "scout",       phase: "submit",   type: "log",          message: "Storing ProjectManifest on Storacha…" },
-  { id: "s11", elapsed: 5100,  agent: "scout",       phase: "submit",   type: "log",          message: "Manifest stored · bafybeidqzm7v4rsxhp..." },
-  { id: "s12", elapsed: 5500,  agent: "system",      phase: "submit",   type: "handover",     message: "Scout → Evidence",
-    detail: "174 projects · bafybeidqzm7..." },
+// Server → Client message shapes (mirror ws-types.ts)
+type ServerMessage =
+  | { type: "ready"; serverVersion: string }
+  | { type: "pong" }
+  | { type: "pipeline_start"; runId: string; ecosystem: string }
+  | { type: "pipeline_done"; runId: string; summary: PipelineSummary }
+  | { type: "pipeline_error"; runId: string; stage: string; message: string }
+  | { type: "stage_start"; runId: string; stage: AgentRole }
+  | { type: "stage_done"; runId: string; stage: AgentRole }
+  | { type: "log"; runId: string; agent: AgentRole; entry: { phase: string; action: string; details?: Record<string, unknown> } }
+  | { type: "tool_call"; runId: string; agent: AgentRole; phase: string; tool: string; input: unknown }
+  | { type: "tool_done"; runId: string; agent: AgentRole; phase: string; tool: string; output: unknown; durationMs: number }
+  | { type: "tool_error"; runId: string; agent: AgentRole; phase: string; tool: string; error: string; durationMs: number }
+  | { type: "project_complete"; runId: string; payload: {
+      title: string;
+      confidenceScore: number;
+      verifiedClaims: unknown[];
+      flaggedClaims: unknown[];
+      atproto?: unknown;
+      storachaRefs: { hypercertPayloadCid?: string };
+    }
+  };
 
-  { id: "e0",  elapsed: 6200,  agent: "evidence",    phase: "discover", type: "log",          message: "Processing 3 projects with GitHub + website sources" },
-  { id: "e1",  elapsed: 6600,  agent: "evidence",    phase: "plan",     type: "log",          message: "ZKMarket — 3 sources queued" },
-  { id: "e2",  elapsed: 6900,  agent: "evidence",    phase: "execute",  type: "tool-call",    message: "github_commits",
-    toolCall: { name: "github_commits", input: "github.com/zkmarket/zkmarket" } },
-  { id: "e3",  elapsed: 8000,  agent: "evidence",    phase: "execute",  type: "tool-done",    message: "github_commits",
-    toolCall: { name: "github_commits", output: "47 commits · 2 contributors (last 90d)", durationMs: 1100 } },
-  { id: "e4",  elapsed: 8300,  agent: "evidence",    phase: "execute",  type: "tool-call",    message: "github_issues",
-    toolCall: { name: "github_issues", input: "github.com/zkmarket/zkmarket" } },
-  { id: "e5",  elapsed: 9000,  agent: "evidence",    phase: "execute",  type: "tool-done",    message: "github_issues",
-    toolCall: { name: "github_issues", output: "5 closed · 3 open · milestone: v1.0", durationMs: 700 } },
-  { id: "e6",  elapsed: 9300,  agent: "evidence",    phase: "execute",  type: "tool-call",    message: "fetch_website",
-    toolCall: { name: "fetch_website", input: "zkmarket.xyz" } },
-  { id: "e7",  elapsed: 9900,  agent: "evidence",    phase: "execute",  type: "tool-done",    message: "fetch_website",
-    toolCall: { name: "fetch_website", output: "200 OK · 1,204 tokens extracted", durationMs: 600 } },
-  { id: "e8",  elapsed: 10200, agent: "evidence",    phase: "execute",  type: "tool-call",    message: "llm:extract_claims",
-    toolCall: { name: "llm:extract_claims", input: "ZKMarket evidence bundle (GPT-4o structured output)" } },
-  { id: "e9",  elapsed: 12200, agent: "evidence",    phase: "execute",  type: "tool-done",    message: "llm:extract_claims",
-    toolCall: { name: "llm:extract_claims", output: "9 structured claims extracted", durationMs: 2000 } },
-  { id: "e10", elapsed: 12500, agent: "evidence",    phase: "submit",   type: "log",          message: "ZKMarket bundle stored · bafybeidxyz3ev..." },
-  { id: "e11", elapsed: 12900, agent: "evidence",    phase: "plan",     type: "log",          message: "DataBridge — 2 sources queued" },
-  { id: "e12", elapsed: 13200, agent: "evidence",    phase: "execute",  type: "tool-call",    message: "github_commits",
-    toolCall: { name: "github_commits", input: "github.com/databridge-xyz/databridge" } },
-  { id: "e13", elapsed: 14300, agent: "evidence",    phase: "execute",  type: "tool-done",    message: "github_commits",
-    toolCall: { name: "github_commits", output: "78 commits · 2 contributors", durationMs: 1100 } },
-  { id: "e14", elapsed: 14600, agent: "evidence",    phase: "execute",  type: "tool-call",    message: "fetch_website",
-    toolCall: { name: "fetch_website", input: "databridge.xyz" } },
-  { id: "e15", elapsed: 15300, agent: "evidence",    phase: "execute",  type: "tool-done",    message: "fetch_website",
-    toolCall: { name: "fetch_website", output: "200 OK · 892 tokens", durationMs: 700 } },
-  { id: "e16", elapsed: 15600, agent: "evidence",    phase: "execute",  type: "tool-call",    message: "llm:extract_claims",
-    toolCall: { name: "llm:extract_claims", input: "DataBridge evidence bundle (GPT-4o)" } },
-  { id: "e17", elapsed: 17700, agent: "evidence",    phase: "execute",  type: "tool-done",    message: "llm:extract_claims",
-    toolCall: { name: "llm:extract_claims", output: "10 structured claims extracted", durationMs: 2100 } },
-  { id: "e18", elapsed: 18000, agent: "evidence",    phase: "submit",   type: "log",          message: "DataBridge bundle stored · bafybeidxyz2ev..." },
-  { id: "e19", elapsed: 18400, agent: "evidence",    phase: "plan",     type: "log",          message: "StorageDAO — 3 sources queued" },
-  { id: "e20", elapsed: 18700, agent: "evidence",    phase: "execute",  type: "tool-call",    message: "github_commits",
-    toolCall: { name: "github_commits", input: "github.com/storagedao/storagedao" } },
-  { id: "e21", elapsed: 19600, agent: "evidence",    phase: "execute",  type: "tool-done",    message: "github_commits",
-    toolCall: { name: "github_commits", output: "134 commits · 3 contributors", durationMs: 900 } },
-  { id: "e22", elapsed: 19900, agent: "evidence",    phase: "execute",  type: "tool-call",    message: "onchain_rpc",
-    toolCall: { name: "onchain_rpc", input: "base-sepolia:0xabc123def456 (StorageDAO contract)" } },
-  { id: "e23", elapsed: 20600, agent: "evidence",    phase: "execute",  type: "tool-done",    message: "onchain_rpc",
-    toolCall: { name: "onchain_rpc", output: "208 transactions · deployed block 7,234,112", durationMs: 700 } },
-  { id: "e24", elapsed: 20900, agent: "evidence",    phase: "execute",  type: "tool-call",    message: "llm:extract_claims",
-    toolCall: { name: "llm:extract_claims", input: "StorageDAO evidence bundle (GPT-4o)" } },
-  { id: "e25", elapsed: 23100, agent: "evidence",    phase: "execute",  type: "tool-done",    message: "llm:extract_claims",
-    toolCall: { name: "llm:extract_claims", output: "11 structured claims extracted", durationMs: 2200 } },
-  { id: "e26", elapsed: 23400, agent: "evidence",    phase: "submit",   type: "log",          message: "StorageDAO bundle stored · bafybeidxyz1ev..." },
-  { id: "e27", elapsed: 23800, agent: "system",      phase: "submit",   type: "handover",     message: "Evidence → Adversarial",
-    detail: "30 claims extracted across 3 projects" },
-
-  { id: "a0",  elapsed: 24500, agent: "adversarial", phase: "discover", type: "log",          message: "Challenging 30 claims across 3 projects" },
-  { id: "a1",  elapsed: 24800, agent: "adversarial", phase: "plan",     type: "log",          message: "ZKMarket — challenging 9 claims" },
-  { id: "a2",  elapsed: 25100, agent: "adversarial", phase: "execute",  type: "log",          message: "claim:v1 — 47 commits confirmed via GitHub API → ✓ verified" },
-  { id: "a3",  elapsed: 25500, agent: "adversarial", phase: "execute",  type: "log",          message: "claim:v2 — snarkjs found in package.json → ✓ verified" },
-  { id: "a4",  elapsed: 25900, agent: "adversarial", phase: "execute",  type: "tool-call",    message: "rpc_probe",
-    toolCall: { name: "rpc_probe", input: "base-sepolia · ZKMarket contract (claimed: 10,000 transactions)" } },
-  { id: "a5",  elapsed: 26600, agent: "adversarial", phase: "execute",  type: "tool-done",    message: "rpc_probe",
-    toolCall: { name: "rpc_probe", output: "23 transactions found — claim: 10,000", durationMs: 700 } },
-  { id: "a6",  elapsed: 26900, agent: "adversarial", phase: "execute",  type: "log",          message: "claim:f1 [vague-metric] — claimed 10,000 txs · found 23 onchain → ✗ flagged" },
-  { id: "a7",  elapsed: 27300, agent: "adversarial", phase: "execute",  type: "tool-call",    message: "http_probe",
-    toolCall: { name: "http_probe", input: "demo.zkmarket.xyz — claimed live demo" } },
-  { id: "a8",  elapsed: 27900, agent: "adversarial", phase: "execute",  type: "tool-done",    message: "http_probe",
-    toolCall: { name: "http_probe", output: "404 Not Found", durationMs: 600 } },
-  { id: "a9",  elapsed: 28200, agent: "adversarial", phase: "execute",  type: "log",          message: "claim:f4 [dead-link] — demo.zkmarket.xyz → 404 → ✗ flagged" },
-  { id: "a10", elapsed: 28600, agent: "adversarial", phase: "verify",   type: "log",          message: "ZKMarket — ✓ 5 verified · ✗ 4 flagged · confidence 56%" },
-  { id: "a11", elapsed: 29000, agent: "adversarial", phase: "submit",   type: "log",          message: "ZKMarket log EIP-191 signed · bafybeidxyz3adv..." },
-  { id: "a12", elapsed: 29400, agent: "adversarial", phase: "plan",     type: "log",          message: "DataBridge — challenging 10 claims" },
-  { id: "a13", elapsed: 29800, agent: "adversarial", phase: "execute",  type: "tool-call",    message: "http_probe",
-    toolCall: { name: "http_probe", input: "api.databridge.xyz/events?chain=base — claimed: 1M+ events/day" } },
-  { id: "a14", elapsed: 30400, agent: "adversarial", phase: "execute",  type: "tool-done",    message: "http_probe",
-    toolCall: { name: "http_probe", output: "200 OK · 2,341 total events (not 1M+/day)", durationMs: 600 } },
-  { id: "a15", elapsed: 30700, agent: "adversarial", phase: "execute",  type: "log",          message: "claim:f1 [vague-metric] — 1M+/day unsubstantiated · found 2,341 total → ✗ flagged" },
-  { id: "a16", elapsed: 31100, agent: "adversarial", phase: "verify",   type: "log",          message: "DataBridge — ✓ 7 verified · ✗ 2 flagged · confidence 72%" },
-  { id: "a17", elapsed: 31500, agent: "adversarial", phase: "submit",   type: "log",          message: "DataBridge log EIP-191 signed · bafybeidxyz2adv..." },
-  { id: "a18", elapsed: 31900, agent: "adversarial", phase: "plan",     type: "log",          message: "StorageDAO — challenging 11 claims" },
-  { id: "a19", elapsed: 32200, agent: "adversarial", phase: "execute",  type: "tool-call",    message: "rpc_probe",
-    toolCall: { name: "rpc_probe", input: "base-sepolia:0xabc123 — claimed: 500 DAO members" } },
-  { id: "a20", elapsed: 32800, agent: "adversarial", phase: "execute",  type: "tool-done",    message: "rpc_probe",
-    toolCall: { name: "rpc_probe", output: "12 unique voter addresses — claim: 500 members", durationMs: 600 } },
-  { id: "a21", elapsed: 33100, agent: "adversarial", phase: "execute",  type: "log",          message: "claim:f1 [vague-metric] — 500 members unverifiable · 12 onchain voters → ✗ flagged" },
-  { id: "a22", elapsed: 33700, agent: "adversarial", phase: "verify",   type: "log",          message: "StorageDAO — ✓ 9 verified · ✗ 1 flagged · confidence 81%" },
-  { id: "a23", elapsed: 34100, agent: "adversarial", phase: "submit",   type: "log",          message: "StorageDAO log EIP-191 signed · bafybeidxyz1adv..." },
-  { id: "a24", elapsed: 34500, agent: "system",      phase: "submit",   type: "handover",     message: "Adversarial → Synthesis",
-    detail: "21 verified · 7 flagged · 1 unresolved" },
-
-  { id: "sy0", elapsed: 35200, agent: "synthesis",   phase: "discover", type: "log",          message: "Assembling hypercert payloads for 3 projects" },
-  { id: "sy1", elapsed: 35600, agent: "synthesis",   phase: "plan",     type: "log",          message: "ZKMarket — building payload" },
-  { id: "sy2", elapsed: 35900, agent: "synthesis",   phase: "execute",  type: "tool-call",    message: "llm:evaluator_summary",
-    toolCall: { name: "llm:evaluator_summary", input: "ZKMarket evidence + adversarial log (GPT-4o)" } },
-  { id: "sy3", elapsed: 38100, agent: "synthesis",   phase: "execute",  type: "tool-done",    message: "llm:evaluator_summary",
-    toolCall: { name: "llm:evaluator_summary", output: "Summary generated · 127 words", durationMs: 2200 } },
-  { id: "sy4", elapsed: 38500, agent: "synthesis",   phase: "submit",   type: "log",          message: "ZKMarket payload stored · bafybeidxyz3hyp..." },
-  { id: "sy5", elapsed: 38900, agent: "synthesis",   phase: "submit",   type: "log",          message: "ZKMarket published to ATProto · rkey=3mi3m7rvz2g2y" },
-  { id: "sy6", elapsed: 39300, agent: "synthesis",   phase: "submit",   type: "project-complete", message: "ZKMarket complete", projectId: "zkmarket" },
-  { id: "sy7", elapsed: 39700, agent: "synthesis",   phase: "plan",     type: "log",          message: "DataBridge — building payload" },
-  { id: "sy8", elapsed: 40000, agent: "synthesis",   phase: "execute",  type: "tool-call",    message: "llm:evaluator_summary",
-    toolCall: { name: "llm:evaluator_summary", input: "DataBridge evidence + adversarial log (GPT-4o)" } },
-  { id: "sy9", elapsed: 42200, agent: "synthesis",   phase: "execute",  type: "tool-done",    message: "llm:evaluator_summary",
-    toolCall: { name: "llm:evaluator_summary", output: "Summary generated · 134 words", durationMs: 2200 } },
-  { id: "sy10",elapsed: 42600, agent: "synthesis",   phase: "submit",   type: "log",          message: "DataBridge published to ATProto · rkey=3mi3m8bbb222" },
-  { id: "sy11",elapsed: 43000, agent: "synthesis",   phase: "submit",   type: "project-complete", message: "DataBridge complete", projectId: "databridge" },
-  { id: "sy12",elapsed: 43400, agent: "synthesis",   phase: "plan",     type: "log",          message: "StorageDAO — building payload" },
-  { id: "sy13",elapsed: 43700, agent: "synthesis",   phase: "execute",  type: "tool-call",    message: "llm:evaluator_summary",
-    toolCall: { name: "llm:evaluator_summary", input: "StorageDAO evidence + adversarial log (GPT-4o)" } },
-  { id: "sy14",elapsed: 46100, agent: "synthesis",   phase: "execute",  type: "tool-done",    message: "llm:evaluator_summary",
-    toolCall: { name: "llm:evaluator_summary", output: "Summary generated · 141 words", durationMs: 2400 } },
-  { id: "sy15",elapsed: 46500, agent: "synthesis",   phase: "submit",   type: "log",          message: "StorageDAO published to ATProto · rkey=3mi3m8aaa111" },
-  { id: "sy16",elapsed: 46900, agent: "synthesis",   phase: "submit",   type: "project-complete", message: "StorageDAO complete", projectId: "storagedao" },
-  { id: "sy17",elapsed: 47300, agent: "system",      phase: "submit",   type: "log",          message: "Pipeline complete · 3/3 hypercerts published · all artifacts stored on Storacha" },
-];
+type PipelineSummary = {
+  projectsEvaluated: number;
+  hypercertsStored: number;
+  atprotoPublished: number;
+  totalVerified: number;
+  totalFlagged: number;
+  totalUnresolved: number;
+  durationMs: number;
+};
 
 // ── Meta ───────────────────────────────────────────────────────────────────
 
@@ -165,28 +82,27 @@ const STAGE_META = [
 
 const STAGE_AGENTS: Agent[] = ["scout", "evidence", "adversarial", "synthesis"];
 
+const WS_URL =
+  (process.env.NEXT_PUBLIC_WS_URL ?? "ws://localhost:3001") + "/ws";
+
 // ── Live Stats ─────────────────────────────────────────────────────────────
 
 type LiveStats = {
-  // Scout
   scoutVisible: boolean;
   pagesScraped: number;
   projectsRaw: number;
   projectsIndexed: number;
   duplicatesRemoved: number;
   manifestCid: string | null;
-  // Evidence
   evidenceVisible: boolean;
   evidenceProjectsDone: number;
   claimsExtracted: number;
   sourcesQueried: number;
-  // Adversarial
   adversarialVisible: boolean;
   adversarialVerified: number;
   adversarialFlagged: number;
   adversarialUnresolved: number;
   avgConfidence: string | null;
-  // Synthesis
   synthesisVisible: boolean;
   hypercertsBuilt: number;
   atprotoPublished: number;
@@ -201,43 +117,43 @@ const INITIAL_STATS: LiveStats = {
   synthesisVisible: false, hypercertsBuilt: 0, atprotoPublished: 0,
 };
 
-const STAT_TRIGGERS: Record<string, Partial<LiveStats>> = {
-  "s1":  { scoutVisible: true },
-  "s4":  { pagesScraped: 1, projectsRaw: 24 },
-  "s5":  { pagesScraped: 2, projectsRaw: 48 },
-  "s6":  { pagesScraped: 3, projectsRaw: 72 },
-  "s7":  { pagesScraped: 4, projectsRaw: 178 },
-  "s9":  { projectsIndexed: 174, duplicatesRemoved: 4 },
-  "s11": { manifestCid: "bafybeidqzm7..." },
-  "e0":  { evidenceVisible: true },
-  "e9":  { claimsExtracted: 9,  evidenceProjectsDone: 1, sourcesQueried: 3 },
-  "e17": { claimsExtracted: 19, evidenceProjectsDone: 2, sourcesQueried: 5 },
-  "e25": { claimsExtracted: 30, evidenceProjectsDone: 3, sourcesQueried: 8 },
-  "a0":  { adversarialVisible: true },
-  "a10": { adversarialVerified: 5,  adversarialFlagged: 4 },
-  "a16": { adversarialVerified: 12, adversarialFlagged: 6 },
-  "a22": { adversarialVerified: 21, adversarialFlagged: 7, adversarialUnresolved: 1, avgConfidence: "70%" },
-  "sy0": { synthesisVisible: true },
-  "sy6": { hypercertsBuilt: 1, atprotoPublished: 1 },
-  "sy11":{ hypercertsBuilt: 2, atprotoPublished: 2 },
-  "sy16":{ hypercertsBuilt: 3, atprotoPublished: 3 },
-};
+// ── Helpers ────────────────────────────────────────────────────────────────
 
 function formatElapsed(ms: number) {
   const s = Math.floor(ms / 1000);
   return `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
 }
 
+function buildPayload(source: string, identifier: string): EcosystemInput {
+  if (source === "Filecoin Dev Grants") {
+    return { kind: "filecoin-devgrants", repo: identifier || "filecoin-project/devgrants" };
+  }
+  if (source === "Manual URL list") {
+    return { kind: "manual", urls: identifier.split(",").map((s) => s.trim()).filter(Boolean) };
+  }
+  return { kind: "devspot", url: identifier };
+}
+
+function slugify(title: string): string {
+  return title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+}
+
+function stringify(val: unknown): string {
+  if (typeof val === "string") return val;
+  try { return JSON.stringify(val); } catch { return String(val); }
+}
+
 // ── Component ──────────────────────────────────────────────────────────────
 
 export default function PipelinePage() {
-  const [status, setStatus]           = useState<"idle" | "running" | "done">("idle");
-  const [events, setEvents]           = useState<PipelineEvent[]>([]);
-  const [completedIds, setCompletedIds] = useState<string[]>([]);
-  const [elapsedMs, setElapsedMs]     = useState(0);
-  const [source, setSource]           = useState("Devspot Hackathon");
-  const [identifier, setIdentifier]   = useState(
-    "pl-genesis-frontiers-of-collaboration-hackathon.devspot.app"
+  const [status, setStatus]               = useState<"idle" | "running" | "done" | "error">("idle");
+  const [errorMsg, setErrorMsg]           = useState<string | null>(null);
+  const [events, setEvents]               = useState<PipelineEvent[]>([]);
+  const [completedProjects, setCompleted] = useState<CompletedProject[]>([]);
+  const [elapsedMs, setElapsedMs]         = useState(0);
+  const [source, setSource]               = useState("Devspot Hackathon");
+  const [identifier, setIdentifier]       = useState(
+    "https://pl-genesis-frontiers-of-collaboration-hackathon.devspot.app/?activeTab=projects"
   );
 
   // Live agent state
@@ -245,7 +161,7 @@ export default function PipelinePage() {
   const [activePhase, setActivePhase]   = useState<Phase>("discover");
   const [activeAction, setActiveAction] = useState<string>("");
   const [activeTool, setActiveTool]     = useState<string | null>(null);
-  const [agentKey, setAgentKey]         = useState(0); // triggers re-animation on change
+  const [agentKey, setAgentKey]         = useState(0);
 
   // Handover state
   const [handover, setHandover] = useState<{
@@ -256,9 +172,12 @@ export default function PipelinePage() {
   const [stats, setStats]             = useState<LiveStats>(INITIAL_STATS);
   const [flashedKeys, setFlashedKeys] = useState<Set<string>>(new Set());
 
-  const feedRef     = useRef<HTMLDivElement>(null);
-  const timerRef    = useRef<ReturnType<typeof setInterval> | null>(null);
-  const timeoutsRef = useRef<ReturnType<typeof setTimeout>[]>([]);
+  const feedRef          = useRef<HTMLDivElement>(null);
+  const timerRef         = useRef<ReturnType<typeof setInterval> | null>(null);
+  const wsRef            = useRef<WebSocket | null>(null);
+  const startedAtRef     = useRef<number>(0);
+  const eventCounterRef  = useRef(0);
+  const prevStageRef     = useRef<AgentRole | null>(null);
 
   useEffect(() => {
     if (feedRef.current) {
@@ -266,103 +185,289 @@ export default function PipelinePage() {
     }
   }, [events]);
 
+  // Cleanup WS on unmount
+  useEffect(() => {
+    return () => {
+      wsRef.current?.close();
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, []);
+
+  const flash = useCallback((keys: string[]) => {
+    setFlashedKeys((fk) => new Set([...fk, ...keys]));
+    setTimeout(() => {
+      setFlashedKeys((fk) => {
+        const next = new Set(fk);
+        keys.forEach((k) => next.delete(k));
+        return next;
+      });
+    }, 900);
+  }, []);
+
+  const updateStats = useCallback((update: Partial<LiveStats>) => {
+    setStats((s) => ({ ...s, ...update }));
+    flash(Object.keys(update));
+  }, [flash]);
+
   const triggerHandover = useCallback(
     (from: string, to: string, detail?: string) => {
       setHandover({ visible: true, from, to, detail, exiting: false });
-      // Start exit animation at 2.6s, fully dismiss at 2.9s
       setTimeout(() => setHandover((h) => ({ ...h, exiting: true })), 2600);
       setTimeout(() => setHandover({ visible: false, from: "", to: "" }), 2900);
     },
     []
   );
 
+  const addEvent = useCallback((ev: Omit<PipelineEvent, "id" | "elapsed">) => {
+    const id = `ev-${eventCounterRef.current++}`;
+    const elapsed = Date.now() - startedAtRef.current;
+    setEvents((prev) => [...prev, { ...ev, id, elapsed }]);
+  }, []);
+
   function startPipeline() {
     if (status === "running") return;
+
+    // Reset state
     setStatus("running");
+    setErrorMsg(null);
     setEvents([]);
-    setCompletedIds([]);
+    setCompleted([]);
     setElapsedMs(0);
     setActiveAgent(null);
     setActiveAction("");
     setActiveTool(null);
     setStats(INITIAL_STATS);
     setFlashedKeys(new Set());
+    eventCounterRef.current = 0;
+    prevStageRef.current = null;
 
     const startMs = Date.now();
+    startedAtRef.current = startMs;
     timerRef.current = setInterval(() => setElapsedMs(Date.now() - startMs), 250);
 
-    const touts = EVENTS.map((ev) =>
-      setTimeout(() => {
-        setEvents((prev) => [...prev, ev]);
+    const payload = buildPayload(source, identifier);
+    const ws = new WebSocket(WS_URL);
+    wsRef.current = ws;
 
-        // Update live stats when a trigger event fires
-        const statUpdate = STAT_TRIGGERS[ev.id];
-        if (statUpdate) {
-          setStats((prev) => ({ ...prev, ...statUpdate }));
-          const keys = Object.keys(statUpdate);
-          setFlashedKeys((fk) => new Set([...fk, ...keys]));
-          setTimeout(() => {
-            setFlashedKeys((fk) => {
-              const next = new Set(fk);
-              keys.forEach((k) => next.delete(k));
-              return next;
-            });
-          }, 900);
+    ws.onopen = () => {
+      console.log("[pipeline] WS connected");
+    };
+
+    ws.onmessage = (event) => {
+      let msg: ServerMessage;
+      try { msg = JSON.parse(event.data as string) as ServerMessage; }
+      catch { return; }
+
+      const elapsed = Date.now() - startMs;
+
+      switch (msg.type) {
+        case "ready": {
+          ws.send(JSON.stringify({ type: "run", payload, maxProjects: 3 }));
+          break;
         }
 
-        if (ev.type === "handover") {
-          const [from, to] = ev.message.split(" → ");
-          triggerHandover(from ?? "", to ?? "", ev.detail);
-          // Switch the active agent immediately on handover
-          const newAgent = STAGE_META.find((s) => s.name === to)?.agent ?? null;
-          if (newAgent) {
-            setActiveAgent(newAgent);
-            setAgentKey((k) => k + 1);
-            setActivePhase("discover");
-            setActiveAction("");
-            setActiveTool(null);
+        case "pipeline_start": {
+          addEvent({ agent: "system", phase: "discover", type: "log",
+            message: `Pipeline started · ${msg.ecosystem}` });
+          break;
+        }
+
+        case "stage_start": {
+          const newAgent = msg.stage;
+          const stageName = newAgent.charAt(0).toUpperCase() + newAgent.slice(1);
+
+          // Handover from previous stage
+          if (prevStageRef.current) {
+            const from = prevStageRef.current.charAt(0).toUpperCase() + prevStageRef.current.slice(1);
+            triggerHandover(from, stageName);
+            addEvent({ agent: "system", phase: "submit", type: "handover",
+              message: `${from} → ${stageName}` });
           }
-          return;
+          prevStageRef.current = msg.stage;
+
+          setActiveAgent(newAgent);
+          setAgentKey((k) => k + 1);
+          setActivePhase("discover");
+          setActiveAction("Starting…");
+          setActiveTool(null);
+
+          // Show stats section for this agent
+          if (newAgent === "scout")       updateStats({ scoutVisible: true });
+          if (newAgent === "evidence")    updateStats({ evidenceVisible: true });
+          if (newAgent === "adversarial") updateStats({ adversarialVisible: true });
+          if (newAgent === "synthesis")   updateStats({ synthesisVisible: true });
+          break;
         }
 
-        if (ev.agent !== "system") {
-          setActiveAgent((prev) => {
-            if (prev !== ev.agent) setAgentKey((k) => k + 1);
-            return ev.agent;
-          });
-          setActivePhase(ev.phase);
+        case "stage_done": {
+          // Nothing extra needed — UI infers done state from seenStageAgents
+          break;
+        }
 
-          if (ev.type === "tool-call") {
-            setActiveTool(ev.toolCall?.name ?? null);
-            setActiveAction(`↳ ${ev.toolCall?.name ?? ev.message}`);
-          } else if (ev.type === "tool-done") {
-            setActiveTool(null);
-            setActiveAction(`✓ ${ev.toolCall?.name} — ${ev.toolCall?.output ?? ""}`);
-          } else if (ev.type === "log") {
-            setActiveAction(ev.message);
+        case "log": {
+          const { phase, action, details } = msg.entry;
+          addEvent({ agent: msg.agent, phase: phase as Phase, type: "log", message: action,
+            detail: details ? stringify(Object.values(details)[0]) : undefined });
+          setActivePhase(phase as Phase);
+          setActiveAction(action);
+          setActiveTool(null);
+
+          // Extract scout stats from log messages
+          if (msg.agent === "scout") {
+            const pagesMatch = action.match(/(\d+)\s+projects/i);
+            if (pagesMatch) {
+              const n = parseInt(pagesMatch[1] ?? "0", 10);
+              updateStats({ pagesScraped: (stats.pagesScraped || 0) + 1, projectsRaw: n });
+            }
+            const indexedMatch = action.match(/(\d+)\s+unique/i);
+            if (indexedMatch) {
+              const indexed = parseInt(indexedMatch[1] ?? "0", 10);
+              const raw = stats.projectsRaw || 0;
+              updateStats({ projectsIndexed: indexed, duplicatesRemoved: Math.max(0, raw - indexed) });
+            }
+            if (action.toLowerCase().includes("baf") || action.toLowerCase().includes("cid")) {
+              const cidMatch = action.match(/(baf[a-z0-9]{20,})/i);
+              if (cidMatch) updateStats({ manifestCid: `${cidMatch[1].slice(0, 16)}…` });
+            }
           }
+
+          // Extract evidence stats
+          if (msg.agent === "evidence") {
+            const claimsMatch = action.match(/(\d+)\s+(?:structured\s+)?claims/i);
+            if (claimsMatch) {
+              const n = parseInt(claimsMatch[1] ?? "0", 10);
+              updateStats({ claimsExtracted: (stats.claimsExtracted || 0) + n });
+            }
+          }
+
+          // Extract adversarial stats from summary lines
+          if (msg.agent === "adversarial") {
+            const verMatch = action.match(/✓\s*(\d+)\s+verified/i);
+            const flgMatch = action.match(/✗\s*(\d+)\s+flagged/i);
+            if (verMatch || flgMatch) {
+              const verified = verMatch ? parseInt(verMatch[1] ?? "0", 10) : 0;
+              const flagged  = flgMatch ? parseInt(flgMatch[1] ?? "0", 10)  : 0;
+              updateStats({
+                adversarialVerified:  (stats.adversarialVerified  || 0) + verified,
+                adversarialFlagged:   (stats.adversarialFlagged   || 0) + flagged,
+              });
+            }
+            const confMatch = action.match(/confidence\s+(\d+)%/i);
+            if (confMatch) {
+              updateStats({ avgConfidence: `${confMatch[1]}%` });
+            }
+          }
+          break;
         }
 
-        if (ev.type === "project-complete" && ev.projectId) {
-          setCompletedIds((prev) => [...prev, ev.projectId!]);
+        case "tool_call": {
+          addEvent({ agent: msg.agent, phase: msg.phase as Phase, type: "tool-call",
+            message: msg.tool,
+            toolCall: { name: msg.tool, input: stringify(msg.input) } });
+          setActivePhase(msg.phase as Phase);
+          setActiveTool(msg.tool);
+          setActiveAction(`↳ ${msg.tool}`);
+          break;
         }
 
-        if (ev.id === "sy17") {
+        case "tool_done": {
+          const out = stringify(msg.output);
+          addEvent({ agent: msg.agent, phase: msg.phase as Phase, type: "tool-done",
+            message: msg.tool,
+            toolCall: { name: msg.tool, output: out, durationMs: msg.durationMs } });
+          setActiveTool(null);
+          setActiveAction(`✓ ${msg.tool} — ${out.slice(0, 80)}`);
+
+          // Evidence source count
+          if (msg.agent === "evidence") {
+            updateStats({ sourcesQueried: (stats.sourcesQueried || 0) + 1 });
+          }
+          break;
+        }
+
+        case "tool_error": {
+          addEvent({ agent: msg.agent, phase: msg.phase as Phase, type: "tool-done",
+            message: msg.tool,
+            toolCall: { name: msg.tool, output: `Error: ${msg.error}`, durationMs: msg.durationMs } });
+          setActiveTool(null);
+          break;
+        }
+
+        case "project_complete": {
+          void elapsed; // used above
+          const p = msg.payload;
+          const proj: CompletedProject = {
+            id: slugify(p.title),
+            name: p.title,
+            confidence: Math.round(p.confidenceScore * 100),
+            verified: p.verifiedClaims.length,
+            flagged:  p.flaggedClaims.length,
+            hasAtproto: !!p.atproto,
+          };
+          setCompleted((prev) => [...prev, proj]);
+          addEvent({ agent: "synthesis", phase: "submit", type: "project-complete",
+            message: `${p.title} complete`, projectId: proj.id });
+          updateStats({ hypercertsBuilt: (stats.hypercertsBuilt || 0) + 1 });
+          if (p.atproto) updateStats({ atprotoPublished: (stats.atprotoPublished || 0) + 1 });
+          break;
+        }
+
+        case "pipeline_done": {
+          const s = msg.summary;
+          addEvent({ agent: "system", phase: "submit", type: "log",
+            message: `Pipeline complete · ${s.projectsEvaluated} projects · ${s.hypercertsStored} hypercerts stored · ${formatElapsed(s.durationMs)}` });
           setStatus("done");
           setActiveAgent(null);
           if (timerRef.current) clearInterval(timerRef.current);
+          // Reconcile final stats
+          setStats((prev) => ({
+            ...prev,
+            adversarialVerified:  s.totalVerified,
+            adversarialFlagged:   s.totalFlagged,
+            adversarialUnresolved: s.totalUnresolved,
+            hypercertsBuilt:      s.hypercertsStored,
+            atprotoPublished:     s.atprotoPublished,
+            evidenceProjectsDone: s.projectsEvaluated,
+          }));
+          break;
         }
-      }, ev.elapsed)
-    );
-    timeoutsRef.current = touts;
+
+        case "pipeline_error": {
+          setErrorMsg(msg.message);
+          setStatus("error");
+          setActiveAgent(null);
+          if (timerRef.current) clearInterval(timerRef.current);
+          break;
+        }
+
+        default:
+          break;
+      }
+    };
+
+    ws.onerror = () => {
+      setErrorMsg("WebSocket connection failed. Is the server running?");
+      setStatus("error");
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+
+    ws.onclose = (ev) => {
+      if (ev.code !== 1000 && ev.code !== 1001) {
+        setStatus((s) => s === "running" ? "error" : s);
+        setErrorMsg((m) => m ?? "Connection closed unexpectedly.");
+        if (timerRef.current) clearInterval(timerRef.current);
+      }
+    };
   }
 
   function reset() {
-    timeoutsRef.current.forEach(clearTimeout);
+    wsRef.current?.close(1000, "reset");
+    wsRef.current = null;
     if (timerRef.current) clearInterval(timerRef.current);
     setStatus("idle");
+    setErrorMsg(null);
     setEvents([]);
-    setCompletedIds([]);
+    setCompleted([]);
     setElapsedMs(0);
     setActiveAgent(null);
     setActiveAction("");
@@ -370,6 +475,8 @@ export default function PipelinePage() {
     setHandover({ visible: false, from: "", to: "" });
     setStats(INITIAL_STATS);
     setFlashedKeys(new Set());
+    prevStageRef.current = null;
+    eventCounterRef.current = 0;
   }
 
   // Stage status helper
@@ -383,10 +490,6 @@ export default function PipelinePage() {
     const lastActive = STAGE_AGENTS.slice().reverse().find((a) => seenStageAgents.has(a));
     return lastActive === agent ? "active" : "done";
   }
-
-  const completedProjects = completedIds
-    .map((id) => MOCK_PROJECTS.find((p) => p.id === id))
-    .filter(Boolean) as (typeof MOCK_PROJECTS)[number][];
 
   const currentStageMeta = STAGE_META.find((s) => s.agent === activeAgent);
 
@@ -418,7 +521,7 @@ export default function PipelinePage() {
               className="flex-1 text-xs font-mono text-[#374151] px-4 py-3.5 outline-none disabled:opacity-50 bg-transparent"
               placeholder="Paste ecosystem URL or identifier…"
             />
-            {status === "idle" && (
+            {(status === "idle" || status === "error") && (
               <button
                 onClick={startPipeline}
                 className="bg-[#0a0a0a] text-white text-xs font-semibold px-6 hover:bg-[#1f2937] transition-colors shrink-0"
@@ -441,6 +544,14 @@ export default function PipelinePage() {
               </button>
             )}
           </div>
+
+          {/* Error banner */}
+          {status === "error" && errorMsg && (
+            <div className="mt-3 flex items-center justify-between gap-3 bg-[#fef2f2] border border-[#fecaca] rounded-lg px-4 py-2.5">
+              <span className="text-xs text-[#dc2626]">{errorMsg}</span>
+              <button onClick={reset} className="text-[11px] text-[#dc2626] opacity-60 hover:opacity-100 shrink-0">Dismiss</button>
+            </div>
+          )}
         </div>
       </section>
 
@@ -470,7 +581,7 @@ export default function PipelinePage() {
         </div>
       )}
 
-      {/* ── Running / Done layout ── */}
+      {/* ── Running / Done / Error layout ── */}
       {status !== "idle" && (
         <div className="flex-1 flex flex-col">
           <div className="max-w-5xl mx-auto w-full px-5 sm:px-6">
@@ -527,7 +638,6 @@ export default function PipelinePage() {
             {activeAgent && activeAgent !== "system" && (
               <div key={agentKey} className="animate-agent-enter mb-4">
                 <div className="rounded-xl border border-[#e5e7eb] bg-[#f9fafb] overflow-hidden">
-                  {/* Header row */}
                   <div className="flex items-center justify-between px-4 py-3 border-b border-[#e5e7eb]">
                     <div className="flex items-center gap-2.5">
                       <span className="w-2 h-2 rounded-full bg-[#0a0a0a] animate-pulse" />
@@ -539,8 +649,6 @@ export default function PipelinePage() {
                       {activePhase}
                     </span>
                   </div>
-
-                  {/* Live action */}
                   <div className="px-4 py-3 min-h-[52px]">
                     {activeTool ? (
                       <div>
@@ -560,9 +668,7 @@ export default function PipelinePage() {
 
             {/* ── Handover notification ── */}
             {handover.visible && (
-              <div
-                className={`mb-4 ${handover.exiting ? "animate-handover-out" : "animate-handover-in"}`}
-              >
+              <div className={`mb-4 ${handover.exiting ? "animate-handover-out" : "animate-handover-in"}`}>
                 <div className="rounded-xl bg-[#0a0a0a] px-5 py-4 flex items-center gap-4">
                   <div>
                     <div className="text-[10px] font-mono text-[#4b5563] uppercase tracking-widest mb-1">Handover</div>
@@ -598,14 +704,13 @@ export default function PipelinePage() {
                 {events.length === 0 && (
                   <div className="flex items-center gap-2 px-4 py-4 text-[#c4c8cf]">
                     <span className="w-1.5 h-1.5 rounded-full bg-[#e5e7eb] animate-pulse" />
-                    Initialising…
+                    Connecting…
                   </div>
                 )}
 
                 {events.map((ev) => {
                   if (ev.type === "project-complete") return null;
 
-                  // ── Handover row ──
                   if (ev.type === "handover") {
                     return (
                       <div key={ev.id} className="flex items-center gap-0 bg-[#0a0a0a]">
@@ -624,11 +729,11 @@ export default function PipelinePage() {
                     );
                   }
 
-                  const isSystem = ev.agent === "system";
+                  const isSystem   = ev.agent === "system";
                   const isToolCall = ev.type === "tool-call";
                   const isToolDone = ev.type === "tool-done";
-                  const isFlagged  = ev.message.includes("→ ✗ flagged");
-                  const isVerified = ev.message.includes("→ ✓ verified") || ev.message.includes("✓ verified");
+                  const isFlagged  = ev.message.includes("✗");
+                  const isVerified = ev.message.includes("✓");
 
                   return (
                     <div
@@ -637,12 +742,9 @@ export default function PipelinePage() {
                         isToolCall ? "bg-[#f9fafb]" : ""
                       }`}
                     >
-                      {/* Timestamp */}
                       <span className="text-[#c4c8cf] px-4 py-2 shrink-0 tabular-nums w-16 pt-2.5">
                         {formatElapsed(ev.elapsed)}
                       </span>
-
-                      {/* Agent badge */}
                       {!isSystem ? (
                         <span className="shrink-0 text-[9px] font-medium text-[#9ca3af] uppercase tracking-wide w-20 pt-2.5 leading-none">
                           {ev.agent}
@@ -650,13 +752,9 @@ export default function PipelinePage() {
                       ) : (
                         <span className="w-20 shrink-0" />
                       )}
-
-                      {/* Phase */}
                       <span className="shrink-0 text-[#d1d5db] w-14 pt-2.5 hidden sm:block">
                         {ev.phase}
                       </span>
-
-                      {/* Content */}
                       <div className={`flex-1 min-w-0 py-2 pr-4 ${isToolCall || isToolDone ? "border-l-2 border-[#e5e7eb] pl-3 ml-0" : ""}`}>
                         {isToolCall && (
                           <div>
@@ -706,7 +804,7 @@ export default function PipelinePage() {
               <div className="mb-8">
                 <div className="flex items-center justify-between mb-3">
                   <span className="text-[10px] font-medium text-[#9ca3af] uppercase tracking-wider">
-                    Hypercerts · {completedProjects.length} / 3
+                    Hypercerts · {completedProjects.length}
                   </span>
                   {status === "done" && (
                     <Link href="/explore" className="text-xs text-[#6b7280] hover:text-[#0a0a0a] transition-colors">
@@ -740,10 +838,12 @@ export default function PipelinePage() {
                         <div className="flex items-center gap-3 text-[10px] font-mono text-[#9ca3af]">
                           <span>✓ {p.verified} verified</span>
                           {p.flagged > 0 && <span>✗ {p.flagged} flagged</span>}
-                          <span className="ml-auto flex items-center gap-1">
-                            <span className="w-1 h-1 rounded-full bg-[#16a34a]" />
-                            ATProto
-                          </span>
+                          {p.hasAtproto && (
+                            <span className="ml-auto flex items-center gap-1">
+                              <span className="w-1 h-1 rounded-full bg-[#16a34a]" />
+                              ATProto
+                            </span>
+                          )}
                         </div>
                       </Link>
                     );
@@ -752,21 +852,21 @@ export default function PipelinePage() {
               </div>
             )}
           </div>
+
           {/* ── Right: stats panel ── */}
           <div className="w-52 shrink-0 hidden sm:block pt-5 sticky top-6 self-start pb-10">
             <div className="text-[10px] font-medium text-[#9ca3af] uppercase tracking-wider mb-4">Live Stats</div>
 
-            {/* Scout */}
             {stats.scoutVisible && (
               <div className="animate-agent-enter mb-5">
                 <div className="text-[10px] font-semibold text-[#0a0a0a] uppercase tracking-widest mb-2">Scout</div>
                 <div className="space-y-1.5">
                   {[
-                    { label: "Pages scraped",    key: "pagesScraped",     val: stats.pagesScraped    || "—" },
-                    { label: "Projects raw",      key: "projectsRaw",      val: stats.projectsRaw     || "—" },
-                    { label: "Projects indexed",  key: "projectsIndexed",  val: stats.projectsIndexed || "—" },
-                    { label: "Duplicates removed",key: "duplicatesRemoved",val: stats.duplicatesRemoved || "—" },
-                    { label: "Manifest",          key: "manifestCid",      val: stats.manifestCid     || "—" },
+                    { label: "Pages scraped",     key: "pagesScraped",     val: stats.pagesScraped     || "—" },
+                    { label: "Projects raw",       key: "projectsRaw",      val: stats.projectsRaw      || "—" },
+                    { label: "Projects indexed",   key: "projectsIndexed",  val: stats.projectsIndexed  || "—" },
+                    { label: "Duplicates removed", key: "duplicatesRemoved",val: stats.duplicatesRemoved || "—" },
+                    { label: "Manifest",           key: "manifestCid",      val: stats.manifestCid      || "—" },
                   ].map(({ label, key, val }) => (
                     <div key={key} className="flex items-baseline justify-between gap-2">
                       <span className="text-[11px] text-[#9ca3af] leading-snug shrink-0">{label}</span>
@@ -779,15 +879,14 @@ export default function PipelinePage() {
               </div>
             )}
 
-            {/* Evidence */}
             {stats.evidenceVisible && (
               <div className="animate-agent-enter mb-5">
                 <div className="text-[10px] font-semibold text-[#0a0a0a] uppercase tracking-widest mb-2">Evidence</div>
                 <div className="space-y-1.5">
                   {[
-                    { label: "Processed",        key: "evidenceProjectsDone", val: stats.evidenceProjectsDone ? `${stats.evidenceProjectsDone}/3` : "—" },
+                    { label: "Processed",        key: "evidenceProjectsDone", val: stats.evidenceProjectsDone ? `${stats.evidenceProjectsDone} proj` : "—" },
                     { label: "Claims extracted", key: "claimsExtracted",      val: stats.claimsExtracted      || "—" },
-                    { label: "Sources queried",  key: "sourcesQueried",        val: stats.sourcesQueried        || "—" },
+                    { label: "Sources queried",  key: "sourcesQueried",       val: stats.sourcesQueried       || "—" },
                   ].map(({ label, key, val }) => (
                     <div key={key} className="flex items-baseline justify-between gap-2">
                       <span className="text-[11px] text-[#9ca3af] leading-snug shrink-0">{label}</span>
@@ -800,16 +899,15 @@ export default function PipelinePage() {
               </div>
             )}
 
-            {/* Adversarial */}
             {stats.adversarialVisible && (
               <div className="animate-agent-enter mb-5">
                 <div className="text-[10px] font-semibold text-[#0a0a0a] uppercase tracking-widest mb-2">Adversarial</div>
                 <div className="space-y-1.5">
                   {[
-                    { label: "Verified",        key: "adversarialVerified",  val: stats.adversarialVerified   || "—" },
-                    { label: "Flagged",         key: "adversarialFlagged",   val: stats.adversarialFlagged    || "—" },
-                    { label: "Unresolved",      key: "adversarialUnresolved",val: stats.adversarialUnresolved || "—" },
-                    { label: "Avg confidence",  key: "avgConfidence",        val: stats.avgConfidence         || "—" },
+                    { label: "Verified",       key: "adversarialVerified",   val: stats.adversarialVerified   || "—" },
+                    { label: "Flagged",        key: "adversarialFlagged",    val: stats.adversarialFlagged    || "—" },
+                    { label: "Unresolved",     key: "adversarialUnresolved", val: stats.adversarialUnresolved || "—" },
+                    { label: "Avg confidence", key: "avgConfidence",         val: stats.avgConfidence         || "—" },
                   ].map(({ label, key, val }) => (
                     <div key={key} className="flex items-baseline justify-between gap-2">
                       <span className="text-[11px] text-[#9ca3af] leading-snug shrink-0">{label}</span>
@@ -822,14 +920,13 @@ export default function PipelinePage() {
               </div>
             )}
 
-            {/* Synthesis */}
             {stats.synthesisVisible && (
               <div className="animate-agent-enter mb-5">
                 <div className="text-[10px] font-semibold text-[#0a0a0a] uppercase tracking-widest mb-2">Synthesis</div>
                 <div className="space-y-1.5">
                   {[
-                    { label: "Hypercerts built", key: "hypercertsBuilt",   val: stats.hypercertsBuilt   ? `${stats.hypercertsBuilt}/3`   : "—" },
-                    { label: "ATProto published", key: "atprotoPublished", val: stats.atprotoPublished  ? `${stats.atprotoPublished}/3`  : "—" },
+                    { label: "Hypercerts built",  key: "hypercertsBuilt",  val: stats.hypercertsBuilt  || "—" },
+                    { label: "ATProto published", key: "atprotoPublished", val: stats.atprotoPublished || "—" },
                   ].map(({ label, key, val }) => (
                     <div key={key} className="flex items-baseline justify-between gap-2">
                       <span className="text-[11px] text-[#9ca3af] leading-snug shrink-0">{label}</span>
