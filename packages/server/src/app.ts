@@ -8,7 +8,7 @@
  * WebSocket endpoint:
  *   WS   /ws            — pipeline runner, one run per connection
  *
- * WSS in production:
+ * WSS in production: 
  *   The server itself speaks plain HTTP/WS. TLS termination is handled
  *   by the platform (Railway, Fly.io, Render) or an nginx/Caddy reverse
  *   proxy. The client connects via wss:// through the platform's ingress.
