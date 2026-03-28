@@ -111,6 +111,9 @@ async function main() {
     const agentUrl = explorerAgentUrl(agentId);
     results.push({ role: agent.role, agentId, envKey: agent.envKey, agentUrl });
     console.log(`  ✓ ${agent.role} registered → ${agentUrl}`);
+
+    // Brief pause so nonce updates propagate before the next registration
+    await new Promise((r) => setTimeout(r, 3000));
   }
 
   if (results.length === 0) {
