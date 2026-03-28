@@ -147,9 +147,12 @@ export async function runAdversarialAgent(
       const allLogs: AdversarialLog[] = [];
 
       await Promise.all(
-        evidenceProjects.map((project, i) =>
+        evidenceProjects.map((project) =>
           sem(async () => {
-            const bundle = bundles[i];
+            // Look up by projectId — NOT by index. Promise.all completion
+            // order is non-deterministic so bundles[i] may be from a
+            // different project than evidenceProjects[i].
+            const bundle = bundles.find((b) => b.projectId === project.id);
             if (!bundle) {
               ctx.logger.log("warn", "plan", "adversarial:no-bundle", { id: project.id });
               updatedProjects.push(project);
