@@ -35,13 +35,23 @@ function getApp(): App | null {
 }
 
 /**
- * Returns an Octokit instance authenticated as the given installation, or
- * null if GITHUB_APP_ID / GITHUB_APP_PRIVATE_KEY are not configured.
+ * Returns an @octokit/rest Octokit instance authenticated as the given
+ * installation, or null if GITHUB_APP_ID / GITHUB_APP_PRIVATE_KEY are not set.
+ *
+ * We exchange an installation access token via the App JWT and then create a
+ * fresh @octokit/rest Octokit with it — this gives us all the REST endpoint
+ * methods (repos, pulls, git, etc.) that @octokit/app's base Octokit lacks.
  */
 export async function getInstallationOctokit(installationId: number): Promise<Octokit | null> {
   const app = getApp();
   if (!app) return null;
-  return app.getInstallationOctokit(installationId) as unknown as Octokit;
+
+  const { data } = await app.octokit.request(
+    "POST /app/installations/{installation_id}/access_tokens",
+    { installation_id: installationId }
+  );
+
+  return new Octokit({ auth: data.token });
 }
 
 // ── Write-back helpers ───────────────────────────────────────────────────────

@@ -158,6 +158,9 @@ export async function persistRegistry(
       console.log(`[registry] IPNS updated → ${newCid}`);
     })
     .catch((err) => {
-      console.error("[registry] IPNS publish failed (Redis already updated):", err);
+      // "outdated record" happens when currentRevision was reset by a server
+      // restart — IPNS needs a monotonically increasing sequence number.
+      // Redis already holds the authoritative registry; this is non-critical.
+      console.warn("[registry] IPNS publish skipped (Redis is primary):", err instanceof Error ? err.message : err);
     });
 }
