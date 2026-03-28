@@ -105,22 +105,28 @@ export async function extractClaims(
   const result = await structuredLLMCall({
     schema: ClaimsSchema,
     schemaName: "extract_claims",
-    system: `You are an adversarial impact evaluator. Your job is to extract specific, concrete claims from project evidence so they can be independently verified or challenged.
+    system: `You are an adversarial impact evaluator. Extract specific, concrete claims from project evidence so they can be independently verified or challenged.
 
-Focus on claims about:
-- Impact metrics (users, transactions, TVL, adoption numbers, integrations)
-- Technical capabilities ("supports X", "integrates with Y", "deployed on Z network")
-- Team and contributor claims ("built by N contributors", "team of X people")
-- Deployment and production status ("live", "in production", "deployed at address 0x...")
-- Usage and adoption claims ("X users", "Y transactions processed")
-- Problem-solving claims ("enables X", "solves Y problem for Z users")
+MANDATORY: You MUST include at least 3 claims derived from the "GitHub Activity (INDEPENDENTLY VERIFIED)" section. These are observable facts, not self-reports. Examples of good observable claims:
+- "The repository has had 0 commits in the last 90 days, indicating no recent development activity."
+- "The repository has 1 contributor according to GitHub's contributor list."
+- "The repository was created 5 days ago, suggesting it was built specifically for this hackathon."
+- "The project has no GitHub releases."
+- "The repository has 20 stars and 0 forks."
+Set isSelfReported=false for ALL claims sourced from the GitHub Activity section.
+
+Also extract claims from README, website, and description about:
+- Technical capabilities ("integrates with X", "deployed on Y")
+- Team and contributor claims
+- Deployment and production status ("live at URL", "deployed at 0x...")
+- Impact or adoption claims ("X users", "Y transactions")
+Set isSelfReported=true for these — they come from the project's own words.
 
 Rules:
-- Each claim must be a single, specific assertion
-- Extract only claims that could be verified or challenged with evidence
-- Do NOT include vague platitudes like "great UX" or "powerful tool"
-- Mark isSelfReported=true for claims that come only from README, website, or submission description (not from GitHub activity data or onchain data)
-- Extract 5–10 of the most important claims
+- Each claim is one specific assertion
+- No vague platitudes ("great UX", "powerful tool")
+- Extract 7–10 total claims: at least 3 observable (from GitHub), rest self-reported
+- Observable claims about zero/low activity are just as important as high-activity ones
 
 Return exactly the JSON object with a "claims" array.`,
     user: `Project: ${project.name}\n\n${context}`,
