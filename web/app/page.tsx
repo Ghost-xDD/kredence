@@ -119,9 +119,9 @@ export default function Home() {
         {/* Dot grid background */}
         <div className="dot-grid absolute inset-0 pointer-events-none" aria-hidden />
 
-        <div className="relative max-w-4xl mx-auto w-full px-6 pt-28 pb-24 text-center">
+        <div className="relative max-w-4xl mx-auto w-full px-6 pt-20 pb-14 sm:pt-28 sm:pb-24 text-center">
           {/* Headline */}
-          <h1 className="text-[4.5rem] font-semibold tracking-[-0.03em] text-[#0a0a0a] leading-[1.05] mb-6">
+          <h1 className="text-[2.5rem] sm:text-[4.5rem] font-semibold tracking-[-0.03em] text-[#0a0a0a] leading-[1.1] sm:leading-[1.05] mb-5 sm:mb-6">
             Evaluate Impact.<br />
             <span className="text-[#c8cacf]">Autonomously.</span>
           </h1>
@@ -174,8 +174,8 @@ export default function Home() {
       </section>
 
       {/* ── Pipeline ──────────────────────────────────────────── */}
-      <section className="border-b border-[#e5e7eb]">
-        <div className="max-w-4xl mx-auto px-6 pb-14">
+      <section className="border-t border-b border-[#e5e7eb]">
+        <div className="max-w-4xl mx-auto px-6 py-10 sm:py-14">
           <div className="flex items-center justify-between mb-8">
             <div>
               <h2 className="text-sm font-semibold text-[#0a0a0a] flex items-center gap-2">
@@ -250,7 +250,7 @@ export default function Home() {
               href="https://www.hyperscan.dev/agents/feed"
               target="_blank"
               rel="noopener"
-              className="text-xs text-[#6b7280] hover:text-[#0a0a0a] transition-colors"
+              className="hidden sm:block text-xs text-[#6b7280] hover:text-[#0a0a0a] transition-colors shrink-0"
             >
               Explore on Hyperscan →
             </a>
@@ -259,11 +259,11 @@ export default function Home() {
           {/* Table */}
           <div className="rounded-xl border border-[#e5e7eb] overflow-hidden">
             {/* Header */}
-            <div className="grid grid-cols-[1fr_64px_64px_140px_20px] px-5 py-2.5 bg-[#f9fafb] border-b border-[#e5e7eb]">
+            <div className="grid grid-cols-[1fr_120px_16px] sm:grid-cols-[1fr_64px_64px_140px_16px] px-4 sm:px-5 py-2.5 bg-[#f9fafb] border-b border-[#e5e7eb]">
               <span className="text-[10px] font-medium text-[#9ca3af] uppercase tracking-wider">Project</span>
-              <span className="text-[10px] font-medium text-[#9ca3af] uppercase tracking-wider text-right">Verified</span>
-              <span className="text-[10px] font-medium text-[#9ca3af] uppercase tracking-wider text-right">Flagged</span>
-              <span className="text-[10px] font-medium text-[#9ca3af] uppercase tracking-wider pl-4">Confidence</span>
+              <span className="hidden sm:block text-[10px] font-medium text-[#9ca3af] uppercase tracking-wider text-right">Verified</span>
+              <span className="hidden sm:block text-[10px] font-medium text-[#9ca3af] uppercase tracking-wider text-right">Flagged</span>
+              <span className="text-[10px] font-medium text-[#9ca3af] uppercase tracking-wider sm:pl-4">Confidence</span>
               <span />
             </div>
 
@@ -275,7 +275,7 @@ export default function Home() {
                   href={h.hyperscan}
                   target="_blank"
                   rel="noopener"
-                  className={`grid grid-cols-[1fr_64px_64px_140px_20px] items-center px-5 py-4 hover:bg-[#f9fafb] transition-colors group${i < RECENT.length - 1 ? " border-b border-[#e5e7eb]" : ""}`}
+                  className={`grid grid-cols-[1fr_120px_16px] sm:grid-cols-[1fr_64px_64px_140px_16px] items-center px-4 sm:px-5 py-4 hover:bg-[#f9fafb] transition-colors group${i < RECENT.length - 1 ? " border-b border-[#e5e7eb]" : ""}`}
                 >
                   {/* Name */}
                   <div className="min-w-0">
@@ -293,16 +293,16 @@ export default function Home() {
                     </div>
                   </div>
 
-                  {/* Verified */}
-                  <span className="text-xs font-medium text-[#16a34a] text-right tabular-nums">✓ {h.verified}</span>
+                  {/* Verified — desktop only */}
+                  <span className="hidden sm:block text-xs font-medium text-[#16a34a] text-right tabular-nums">✓ {h.verified}</span>
 
-                  {/* Flagged */}
-                  <span className={`text-xs font-medium text-right tabular-nums ${h.flagged > 0 ? "text-[#dc2626]" : "text-[#d1d5db]"}`}>
+                  {/* Flagged — desktop only */}
+                  <span className={`hidden sm:block text-xs font-medium text-right tabular-nums ${h.flagged > 0 ? "text-[#dc2626]" : "text-[#d1d5db]"}`}>
                     {h.flagged > 0 ? `✗ ${h.flagged}` : "—"}
                   </span>
 
                   {/* Confidence */}
-                  <div className="pl-4 flex items-center gap-2.5">
+                  <div className="flex items-center gap-2 sm:gap-2.5 sm:pl-4">
                     <div className="flex-1 h-[3px] rounded-full bg-[#f3f4f6] overflow-hidden">
                       <div className="h-full rounded-full transition-all" style={{ width: `${h.confidence}%`, backgroundColor: barColor }} />
                     </div>
@@ -318,7 +318,7 @@ export default function Home() {
             })}
           </div>
 
-          <p className="text-[11px] text-[#b0b6c0] mt-3 font-mono text-center">
+          <p className="text-[11px] text-[#b0b6c0] mt-3 font-mono text-center truncate px-2">
             did:plc:fke3rhssj7rdghxee2t73x73 · org.hypercerts.claim.activity
           </p>
         </div>

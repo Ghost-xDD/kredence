@@ -13,7 +13,7 @@ export function Nav() {
             <rect x="11" y="11" width="6" height="6" rx="1.5" fill="#0a0a0a" />
           </svg>
           <span className="font-semibold text-sm tracking-tight text-[#0a0a0a]">Credence</span>
-          <span className="text-[10px] text-[#6b7280] font-medium tracking-widest uppercase">
+          <span className="hidden sm:inline text-[10px] text-[#6b7280] font-medium tracking-widest uppercase">
             by Hypercerts
           </span>
         </Link>
@@ -38,7 +38,7 @@ export function Nav() {
 
         {/* Right */}
         <div className="flex items-center gap-3">
-          <button className="text-[#6b7280] hover:text-[#0a0a0a] transition-colors">
+          <button className="hidden sm:block text-[#6b7280] hover:text-[#0a0a0a] transition-colors">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
               <circle cx="7" cy="7" r="5" stroke="currentColor" strokeWidth="1.5" />
               <path d="M11 11L14 14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />

@@ -35,4 +35,10 @@ body {
   background-size: 28px 28px;
   mask-image: radial-gradient(ellipse 80% 75% at 50% 0%, black 10%, transparent 100%);
   -webkit-mask-image: radial-gradient(ellipse 80% 75% at 50% 0%, black 10%, transparent 100%);
+  animation: dot-drift 10s linear infinite;
+}
+
+@keyframes dot-drift {
+  from { background-position: 0px 0px; }
+  to   { background-position: 28px 28px; }
 }
