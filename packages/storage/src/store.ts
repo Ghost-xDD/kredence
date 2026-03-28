@@ -54,14 +54,15 @@ export async function uploadText(
  */
 export async function retrieveJSON<T = unknown>(
   cid: string,
-  filename = "data.json"
+  filename = "data.json",
+  timeoutMs = 15_000
 ): Promise<T> {
   const isDirectory = cid.startsWith("bafybei");
   const url = isDirectory
     ? `https://${cid}.ipfs.storacha.link/${filename}`
     : `https://${cid}.ipfs.storacha.link`;
 
-  const res = await fetch(url);
+  const res = await fetch(url, { signal: AbortSignal.timeout(timeoutMs) });
 
   if (!res.ok) {
     throw new Error(`Failed to retrieve CID ${cid}: ${res.status} ${res.statusText}`);
