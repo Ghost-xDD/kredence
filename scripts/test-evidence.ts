@@ -19,8 +19,8 @@ config({ path: resolve(__dirname, "../.env") });
 import { runScoutAgent, runEvidenceAgent } from "../packages/agents/dist/index.js";
 import type { EcosystemInput, ProjectManifest } from "../packages/types/dist/index.js";
 
-// Limit to a small number of projects so the test is fast
-const MAX_PROJECTS = 3;
+// Run enough projects to satisfy Phase 2 DoD: "at least five real projects"
+const MAX_PROJECTS = 5;
 
 async function main() {
   console.log("── Evidence Agent Smoke Test ───────────────────────────────\n");
@@ -44,13 +44,19 @@ async function main() {
     process.exit(1);
   }
 
-  // Trim to the first MAX_PROJECTS to keep the test fast
-  const trimmedManifest: ProjectManifest = {
-    ...manifest,
-    projects: manifest.projects.slice(0, MAX_PROJECTS),
-  };
+  // Pick projects that have both a GitHub source and a real website for the DoD
+  // "at least two sources each" — prefer projects with both to maximise evidence quality
+  const withTwoSources = manifest.projects.filter(
+    (p) => p.sources.some((s) => s.type === "github") && p.sources.some((s) => s.type === "website")
+  );
+  const selected =
+    withTwoSources.length >= MAX_PROJECTS
+      ? withTwoSources.slice(0, MAX_PROJECTS)
+      : manifest.projects.slice(0, MAX_PROJECTS);
+
+  const trimmedManifest: ProjectManifest = { ...manifest, projects: selected };
   console.log(
-    `\n  (Limiting to first ${trimmedManifest.projects.length} projects for evidence test)\n`
+    `\n  (Selected ${trimmedManifest.projects.length} projects with ≥2 sources for evidence test)\n`
   );
   trimmedManifest.projects.forEach((p, i) => {
     const github = p.sources.find((s) => s.type === "github")?.url ?? "—";
