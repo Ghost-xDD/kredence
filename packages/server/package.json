@@ -16,6 +16,7 @@
     "@credence/types": "workspace:*",
     "@octokit/app": "^16.1.2",
     "@octokit/rest": "^22.0.1",
+    "@upstash/redis": "^1.37.0",
     "cors": "^2.8.5",
     "express": "^4.21.2",
     "nanoid": "^5.1.5",
