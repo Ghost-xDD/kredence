@@ -1,0 +1,27 @@
+{
+  "name": "@credence/storage",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "dev": "tsc --watch"
+  },
+  "dependencies": {
+    "@credence/types": "workspace:*",
+    "@ucanto/core": "^10.4.6",
+    "@ucanto/principal": "^9.0.3",
+    "@web3-storage/w3up-client": "^16.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "typescript": "^5.4.5"
+  }
+}

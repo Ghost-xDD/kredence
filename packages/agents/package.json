@@ -1,0 +1,27 @@
+{
+  "name": "@credence/agents",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "dev": "tsc --watch"
+  },
+  "dependencies": {
+    "@credence/types": "workspace:*",
+    "@credence/storage": "workspace:*",
+    "viem": "^2.13.0",
+    "openai": "^4.52.0",
+    "nanoid": "^5.0.7"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.5"
+  }
+}
