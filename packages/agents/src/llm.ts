@@ -1,38 +1,43 @@
-import OpenAI from "openai";
+import { ChatOpenAI } from "@langchain/openai";
+import { z } from "zod";
 
-let _client: OpenAI | null = null;
+let _model: ChatOpenAI | null = null;
 
-export function getLLMClient(): OpenAI {
-  if (_client) return _client;
-  const apiKey = process.env["OPENAI_API_KEY"];
-  if (!apiKey) throw new Error("OPENAI_API_KEY env var is not set");
-  _client = new OpenAI({ apiKey });
-  return _client;
+export function getLLM(options?: { temperature?: number }): ChatOpenAI {
+  if (!process.env["OPENAI_API_KEY"]) {
+    throw new Error("OPENAI_API_KEY env var is not set");
+  }
+  if (_model) return _model;
+  _model = new ChatOpenAI({
+    model: "gpt-4o",
+    temperature: options?.temperature ?? 0.1,
+  });
+  return _model;
 }
 
 /**
- * Call the LLM with a system + user prompt, returning a structured JSON response.
- * Uses gpt-4o with JSON mode for reliable structured output.
+ * Call the LLM and parse the response into a Zod-typed structure.
+ * Uses LangChain's withStructuredOutput for reliable JSON extraction.
  */
-export async function structuredLLMCall<T>(params: {
+export async function structuredLLMCall<T extends z.ZodTypeAny>(params: {
+  schema: T;
+  schemaName: string;
   system: string;
   user: string;
-  model?: string;
-}): Promise<T> {
-  const client = getLLMClient();
-
-  const response = await client.chat.completions.create({
-    model: params.model ?? "gpt-4o",
-    response_format: { type: "json_object" },
-    messages: [
-      { role: "system", content: params.system },
-      { role: "user", content: params.user },
-    ],
-    temperature: 0.1, // low temperature for consistent structured output
+  temperature?: number;
+}): Promise<z.infer<T>> {
+  const llm = new ChatOpenAI({
+    model: "gpt-4o",
+    temperature: params.temperature ?? 0.1,
+    apiKey: process.env["OPENAI_API_KEY"],
   });
 
-  const content = response.choices[0]?.message?.content;
-  if (!content) throw new Error("LLM returned empty response");
+  const structured = llm.withStructuredOutput(params.schema, {
+    name: params.schemaName,
+  });
 
-  return JSON.parse(content) as T;
+  return structured.invoke([
+    { role: "system", content: params.system },
+    { role: "user", content: params.user },
+  ]);
 }

@@ -106,6 +106,9 @@ importers:
         specifier: ^4.3.6
         version: 4.3.6
     devDependencies:
+      '@playwright/browser-chromium':
+        specifier: ^1.58.2
+        version: 1.58.2
       typescript:
         specifier: ^5.4.5
         version: 5.9.3
@@ -1116,6 +1119,10 @@ packages:
 
   '@perma/map@1.0.3':
     resolution: {integrity: sha512-Bf5njk0fnJGTFE2ETntq0N1oJ6YdCPIpTDn3R3KYZJQdeYSOCNL7mBrFlGnbqav8YQhJA/p81pvHINX9vAtHkQ==}
+
+  '@playwright/browser-chromium@1.58.2':
+    resolution: {integrity: sha512-/HHFVVP2pzEtqBVOFRoWlDtBoO8bzIWOqS62APdm3OhYbE2+kVUs/ALpkevvAKKfY0DMDVezYN22bDBh77UQ9Q==}
+    engines: {node: '>=18'}
 
   '@playwright/test@1.58.2':
     resolution: {integrity: sha512-akea+6bHYBBfA9uQqSYmlJXn61cTa+jbO87xVLCWbTqbWadRVmhxlXATaOjOgcBaWU4ePo0wB41KMFv3o35IXA==}
@@ -4058,6 +4065,10 @@ snapshots:
     dependencies:
       '@multiformats/murmur3': 2.2.2
       murmurhash3js-revisited: 3.0.0
+
+  '@playwright/browser-chromium@1.58.2':
+    dependencies:
+      playwright-core: 1.58.2
 
   '@playwright/test@1.58.2':
     dependencies:
