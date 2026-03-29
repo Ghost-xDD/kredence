@@ -13,9 +13,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Credence — Autonomous Impact Evaluation",
+  title: "Kredence — Autonomous Impact Evaluation",
   description:
-    "Credence runs autonomous agents to collect evidence, challenge claims, and publish verifiable hypercerts for any project ecosystem.",
+    "Kredence runs autonomous agents to collect evidence, challenge claims, and publish verifiable hypercerts for any project ecosystem.",
 };
 
 export default function RootLayout({
