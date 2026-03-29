@@ -1,37 +1,106 @@
 {
   "title": "Ghost-xDD/kredence",
-  "description": "Kredence is a decentralized identity and credential verification system with a focus on privacy and security, as evidenced by its GitHub repository with 5 contributors and 20 commits in the last 90 days.",
-  "contributors": [],
-  "timeframeStart": "2025-12-29",
+  "description": "Kredence is a GitHub project with 80 commits in the last 90 days, involving 2 contributors, aimed at developing autonomous impact intelligence using Hypercerts.",
+  "contributors": [
+    {
+      "name": "Ghost-xDD",
+      "githubLogin": "Ghost-xDD"
+    },
+    {
+      "name": "kredence-app[bot]",
+      "githubLogin": "kredence-app[bot]"
+    }
+  ],
+  "timeframeStart": "2026-03-28",
   "timeframeEnd": "2026-03-29",
   "impactCategory": [
-    "identity",
-    "privacy"
+    "developer-tools",
+    "data"
   ],
   "workScopes": [
-    "decentralized identity verification",
-    "credential verification",
-    "privacy-focused security",
-    "blockchain integration",
-    "secure data handling"
+    "autonomous impact intelligence",
+    "GitHub evidence collection",
+    "adversarial claim evaluation",
+    "hypercert generation"
   ],
   "evidenceRefs": [
     {
       "label": "Evidence Bundle",
-      "url": "https://bafkreid5at6g7pukaxpbk55ymgyp76cjrxgndgetggixwep5q7pdzst6ie.ipfs.storacha.link",
-      "storachaCid": "bafkreid5at6g7pukaxpbk55ymgyp76cjrxgndgetggixwep5q7pdzst6ie"
+      "url": "https://bafkreiha57ldx3xsm53nlegtqadjeouyn3sqpr44323whpfwzb6vp5dy6u.ipfs.storacha.link",
+      "storachaCid": "bafkreiha57ldx3xsm53nlegtqadjeouyn3sqpr44323whpfwzb6vp5dy6u"
     },
     {
       "label": "Adversarial Log (Signed Receipt)",
-      "url": "https://bafkreiancw7ln3iln7d426x77kdqhgcxdbniuc2bf3luqzwdydiweagxmi.ipfs.storacha.link",
-      "storachaCid": "bafkreiancw7ln3iln7d426x77kdqhgcxdbniuc2bf3luqzwdydiweagxmi"
+      "url": "https://bafkreie57v7qeihdrdjnbeag2joxkrhlh2buzm6gw2qhhe6omkv76fbq3m.ipfs.storacha.link",
+      "storachaCid": "bafkreie57v7qeihdrdjnbeag2joxkrhlh2buzm6gw2qhhe6omkv76fbq3m"
     }
   ],
-  "verifiedClaims": [],
-  "flaggedClaims": [],
+  "verifiedClaims": [
+    {
+      "id": "6QztPhZKc4BZBh6xOkWKF",
+      "text": "The repository has had 80 commits in the last 90 days.",
+      "supportingEvidence": [
+        "GitHub shows 80 commits in the last 90 days, matching the claim."
+      ]
+    },
+    {
+      "id": "c_5FA5VmGV5Ju1DYGlpOT",
+      "text": "The repository was created 1 day ago, suggesting it was built specifically for this hackathon.",
+      "supportingEvidence": [
+        "GitHub shows the repository was created 1 day ago, matching the claim."
+      ]
+    },
+    {
+      "id": "aSycYIVCEE--KJGzlhtwE",
+      "text": "The repository has 2 contributors according to GitHub's contributor list.",
+      "supportingEvidence": [
+        "GitHub shows 2 contributors, matching the claim."
+      ]
+    },
+    {
+      "id": "JElySsqQrMD4mekflrT_q",
+      "text": "The repository has 0 stars and 0 forks.",
+      "supportingEvidence": [
+        "GitHub shows 0 stars and 0 forks, matching the claim."
+      ]
+    },
+    {
+      "id": "vKiHUlJaKkLUl72T7RYWd",
+      "text": "The project has no GitHub releases.",
+      "supportingEvidence": [
+        "GitHub shows no releases, matching the claim."
+      ]
+    }
+  ],
+  "flaggedClaims": [
+    {
+      "id": "q7JlCyCa6X4rjlnKxrKuB",
+      "text": "Kredence is a multi-agent system that discovers projects in a funding ecosystem, collects real evidence from GitHub, onchain activity, and deployments.",
+      "objection": "The claim about the multi-agent system is only found in the README with no independent verification.",
+      "challengeType": "consistency"
+    },
+    {
+      "id": "vViczJ-aawUB6GL9ftvnD",
+      "text": "Kredence produces continuously-updated hypercerts without asking anyone to submit anything.",
+      "objection": "The claim about producing hypercerts is only found in the README with no independent verification.",
+      "challengeType": "consistency"
+    },
+    {
+      "id": "QcCG4FrNt5kDFBMaZHAsR",
+      "text": "Kredence is live at https://kredence.xyz.",
+      "objection": "The website https://kredence.xyz is not accessible, contradicting the claim of being live.",
+      "challengeType": "deployment"
+    },
+    {
+      "id": "jI2TP3StKVsG13NXV126O",
+      "text": "Kredence integrates with decentralised storage to store evidence, objections, and agent attributions permanently.",
+      "objection": "The claim about integration with decentralized storage is only found in the README with no independent verification.",
+      "challengeType": "consistency"
+    }
+  ],
   "openQuestions": [],
-  "evaluatorSummary": "Kredence has demonstrated active development with 20 commits in the last 90 days and contributions from 5 different developers, indicating ongoing work and community engagement. The project focuses on decentralized identity and credential verification, emphasizing privacy and security. While the GitHub activity shows a moderate level of engagement, no specific metrics or user adoption data were provided to verify broader impact claims. Funders should consider the project's technical focus and active development as positive indicators, but should seek additional evidence of real-world application and user impact.",
-  "confidenceScore": 0,
+  "evaluatorSummary": "Kredence is a project with active development, evidenced by 80 commits in the last 90 days and contributions from 2 developers. However, several claims about its functionality, such as being a multi-agent system and producing hypercerts, lack independent verification and are only mentioned in the README. Additionally, the project's website is not accessible, which raises questions about its current deployment status. While the GitHub activity suggests ongoing work, the lack of verifiable evidence for key claims and the absence of a live website may concern potential funders.",
+  "confidenceScore": 0.56,
   "evaluatedBy": [
     {
       "agentId": "3040",
@@ -59,18 +128,18 @@
     }
   ],
   "storachaRefs": {
-    "evidenceBundleCid": "bafkreid5at6g7pukaxpbk55ymgyp76cjrxgndgetggixwep5q7pdzst6ie",
-    "adversarialLogCid": "bafkreiancw7ln3iln7d426x77kdqhgcxdbniuc2bf3luqzwdydiweagxmi",
-    "hypercertPayloadCid": "bafkreidgru7u6i2zkznavxq4s2okkrntihq677chyc5gjie4x63wbqfqxm"
+    "evidenceBundleCid": "bafkreiha57ldx3xsm53nlegtqadjeouyn3sqpr44323whpfwzb6vp5dy6u",
+    "adversarialLogCid": "bafkreie57v7qeihdrdjnbeag2joxkrhlh2buzm6gw2qhhe6omkv76fbq3m",
+    "hypercertPayloadCid": "bafkreiaycgpodbkvpg4hdqa7ojilqxmmlwmf2aidtj6cxgyhvzsl5k7n3e"
   },
-  "generatedAt": "2026-03-29T17:38:45.794Z",
+  "generatedAt": "2026-03-29T17:48:01.237Z",
   "atproto": {
-    "activityUri": "at://did:plc:fke3rhssj7rdghxee2t73x73/org.hypercerts.claim.activity/3mi7oulkoxc2k",
-    "activityCid": "bafyreifrx73heexqcky32bp7kqna3vckbo5rm6bar2h4uc5xffsebhvnj4",
-    "evaluationUri": "at://did:plc:fke3rhssj7rdghxee2t73x73/org.hypercerts.context.evaluation/3mi7oumjh4y2j",
-    "evaluationCid": "bafyreicasgdnhdiweupgbyg2bf2z6tdvbopiojwiqprz6h3qv4e6oygsri",
-    "attachmentUri": "at://did:plc:fke3rhssj7rdghxee2t73x73/org.hypercerts.context.attachment/3mi7oumbldn2u",
-    "attachmentCid": "bafyreiayul6eampil5frl5dbat4g75nquzdccrmnlj3bjmqguaqltf7gce",
-    "hyperscanUrl": "https://www.hyperscan.dev/data?did=did%3Aplc%3Afke3rhssj7rdghxee2t73x73&collection=org.hypercerts.claim.activity&rkey=3mi7oulkoxc2k"
+    "activityUri": "at://did:plc:fke3rhssj7rdghxee2t73x73/org.hypercerts.claim.activity/3mi7pf5mykj2h",
+    "activityCid": "bafyreiaoe3l7mq2ufg47y7m4j6syrkroc2uj6lljozpyjsfars2kc37qpm",
+    "evaluationUri": "at://did:plc:fke3rhssj7rdghxee2t73x73/org.hypercerts.context.evaluation/3mi7pf6ltz72r",
+    "evaluationCid": "bafyreic5cfdosn2n7irig6vzpoihdts6ccldquoenexwthlgof2etf2ree",
+    "attachmentUri": "at://did:plc:fke3rhssj7rdghxee2t73x73/org.hypercerts.context.attachment/3mi7pf6e3yh2j",
+    "attachmentCid": "bafyreia77ffx5ge3sjqy3xh3m6kkncramvf7wmx6cvc5vl37ne2voxovki",
+    "hyperscanUrl": "https://www.hyperscan.dev/data?did=did%3Aplc%3Afke3rhssj7rdghxee2t73x73&collection=org.hypercerts.claim.activity&rkey=3mi7pf5mykj2h"
   }
 }
