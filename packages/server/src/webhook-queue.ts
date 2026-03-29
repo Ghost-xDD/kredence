@@ -85,7 +85,8 @@ async function writeBack(job: WebhookJob, runId: string): Promise<void> {
     return;
   }
 
-  const appUrl = process.env["NEXT_PUBLIC_APP_URL"] ?? "https://kredence.xyz";
+  const appUrl = process.env["APP_URL"] ?? "https://kredence.xyz";
+  const apiUrl = process.env["API_URL"] ?? "https://credenceserver-production.up.railway.app";
 
   try {
     // Fetch full payload from registry to write back to repo
@@ -95,7 +96,7 @@ async function writeBack(job: WebhookJob, runId: string): Promise<void> {
     const fileUrl = await writeHypercertJson(octokit, parsed.owner, parsed.repo, payload as never);
     console.log(`[webhook-queue][${runId}] wrote .hypercert.json → ${fileUrl}`);
 
-    const prUrl = await openBadgePr(octokit, parsed.owner, parsed.repo, entry.slug, appUrl);
+    const prUrl = await openBadgePr(octokit, parsed.owner, parsed.repo, entry.slug, appUrl, apiUrl);
     if (prUrl) {
       console.log(`[webhook-queue][${runId}] badge PR → ${prUrl}`);
     }

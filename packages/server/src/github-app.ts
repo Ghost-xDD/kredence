@@ -113,11 +113,13 @@ export async function openBadgePr(
   owner: string,
   repo: string,
   slug: string,
-  appUrl: string = "https://kredence.xyz"
+  appUrl: string = "https://kredence.xyz",
+  apiUrl: string = "https://credenceserver-production.up.railway.app"
 ): Promise<string | null> {
   const branch = "kredence/badge";
+  const encodedBadgeUrl = encodeURIComponent(`${apiUrl}/badge/${slug}`);
   const badgeMarkdown =
-    `[![Kredence](https://img.shields.io/endpoint?url=${appUrl}/badge/${slug})](${appUrl}/project/${slug})`;
+    `[![Kredence](https://img.shields.io/endpoint?url=${encodedBadgeUrl})](${appUrl}/project/${slug})`;
 
   // Get the default branch SHA to base our new branch on
   const { data: repoData } = await octokit.repos.get({ owner, repo });
