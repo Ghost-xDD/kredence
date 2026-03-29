@@ -13,6 +13,7 @@ import type { AgentLogEntry, EcosystemInput, ProjectManifest, ProjectRecord } fr
 import { runAgent } from "../runner.js";
 import { scrapeDevspot } from "./devspot.js";
 import { fetchFilecoinDevGrants } from "./filecoin-devgrants.js";
+import { scrapeChainlinkHackathon } from "./chainlink-hackathon.js";
 import { uploadJSON } from "@credence/storage";
 import { getOperatorWallet } from "../identity.js";
 
@@ -66,6 +67,22 @@ const manualUrlTool = tool(
     description: "Process a manual list of project URLs into a project manifest.",
     schema: z.object({
       urls: z.array(z.string().url()).describe("List of project URLs"),
+    }),
+  }
+);
+
+const chainlinkHackathonTool = tool(
+  async ({ galleryUrl, maxProjects }: { galleryUrl: string; maxProjects?: number }) => {
+    const projects = await scrapeChainlinkHackathon(galleryUrl, maxProjects);
+    return JSON.stringify(projects);
+  },
+  {
+    name: "scrape_chainlink_hackathon",
+    description:
+      "Scrape Chainlink Convergence hackathon gallery and project detail pages into normalized project records.",
+    schema: z.object({
+      galleryUrl: z.string().url().describe("Chainlink hackathon gallery URL"),
+      maxProjects: z.number().int().positive().optional().describe("Optional cap on detail pages to fetch"),
     }),
   }
 );
@@ -140,6 +157,21 @@ export async function runScoutAgent(
           break;
         }
 
+        case "chainlink-hackathon": {
+          ctx.logger.log("info", "plan", "scout:adapter-chainlink-hackathon", {
+            galleryUrl: ecosystemInput.galleryUrl,
+            maxProjects: ecosystemInput.maxProjects,
+          });
+          const result = await ctx.logger.toolCall(
+            "execute",
+            "scrape_chainlink_hackathon",
+            { galleryUrl: ecosystemInput.galleryUrl, maxProjects: ecosystemInput.maxProjects },
+            async () => scrapeChainlinkHackathon(ecosystemInput.galleryUrl, ecosystemInput.maxProjects)
+          ) as Awaited<ReturnType<typeof scrapeChainlinkHackathon>>;
+          rawProjects = result;
+          break;
+        }
+
         case "github-repo": {
           // Single-repo input from the GitHub App webhook — no discovery needed.
           const repoUrl = ecosystemInput.repoUrl.replace(/\.git$/, "").replace(/\/$/, "");
@@ -211,4 +243,4 @@ export async function runScoutAgent(
 }
 
 // Export tools for use in higher-level agents if needed
-export const scoutTools = [devspotTool, filecoinDevGrantsTool, manualUrlTool];
+export const scoutTools = [devspotTool, filecoinDevGrantsTool, manualUrlTool, chainlinkHackathonTool];

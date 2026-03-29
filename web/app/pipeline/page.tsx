@@ -14,6 +14,7 @@ type EventType = "log" | "tool-call" | "tool-done" | "handover" | "project-compl
 type EcosystemInput =
   | { kind: "devspot"; url: string }
   | { kind: "filecoin-devgrants"; repo: string; labels?: string[] }
+  | { kind: "chainlink-hackathon"; galleryUrl: string; maxProjects?: number }
   | { kind: "ethglobal"; eventSlug: string }
   | { kind: "manual"; urls: string[] }
   | { kind: "github-repo"; repoUrl: string; installationId?: number };
@@ -128,6 +129,12 @@ function formatElapsed(ms: number) {
 function buildPayload(source: string, identifier: string): EcosystemInput {
   if (source === "Filecoin Dev Grants") {
     return { kind: "filecoin-devgrants", repo: identifier || "filecoin-project/devgrants" };
+  }
+  if (source === "Chainlink Convergence") {
+    return {
+      kind: "chainlink-hackathon",
+      galleryUrl: identifier || "https://chain.link/hack-26",
+    };
   }
   if (source === "Manual URL list") {
     return { kind: "manual", urls: identifier.split(",").map((s) => s.trim()).filter(Boolean) };
@@ -576,6 +583,7 @@ export default function PipelinePage() {
                 className="text-xs text-[#374151] bg-transparent outline-none cursor-pointer disabled:opacity-50 py-3"
               >
                 <option>Devspot Hackathon</option>
+                <option>Chainlink Convergence</option>
                 <option>Filecoin Dev Grants</option>
                 <option>Manual URL list</option>
               </select>
