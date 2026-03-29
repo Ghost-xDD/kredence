@@ -14,7 +14,11 @@ type EventType = "log" | "tool-call" | "tool-done" | "handover" | "project-compl
 type EcosystemInput =
   | { kind: "devspot"; url: string }
   | { kind: "filecoin-devgrants"; repo: string; labels?: string[] }
+  | { kind: "chainlink-hackathon"; galleryUrl: string; maxProjects?: number }
   | { kind: "ethglobal"; eventSlug: string }
+  | { kind: "devfolio"; hackathonSlug: string }
+  | { kind: "gitcoin"; roundId: string; chainId?: number }
+  | { kind: "octant"; epochNumber?: number }
   | { kind: "manual"; urls: string[] }
   | { kind: "github-repo"; repoUrl: string; installationId?: number };
 
@@ -126,13 +130,32 @@ function formatElapsed(ms: number) {
 }
 
 function buildPayload(source: string, identifier: string): EcosystemInput {
-  if (source === "Filecoin Dev Grants") {
-    return { kind: "filecoin-devgrants", repo: identifier || "filecoin-project/devgrants" };
+  switch (source) {
+    case "Filecoin Dev Grants":
+      return { kind: "filecoin-devgrants", repo: identifier || "filecoin-project/devgrants" };
+    case "Chainlink Convergence":
+      return { kind: "chainlink-hackathon", galleryUrl: identifier || "https://chain.link/hack-26" };
+    case "Devfolio": {
+      // Accept either a full URL like https://ethbangkok.devfolio.co or just the slug
+      const slug = identifier.replace(/^https?:\/\//, "").replace(/\.devfolio\.co.*$/, "").trim();
+      return { kind: "devfolio", hackathonSlug: slug || "ethbangkok" };
+    }
+    case "Gitcoin Grants": {
+      // Accept "roundAddress" or "chainId/roundAddress"
+      const parts = identifier.split("/");
+      const roundId = parts.length >= 2 ? (parts[1] ?? "") : (parts[0] ?? "");
+      const chainId = parts.length >= 2 ? parseInt(parts[0] ?? "42161", 10) : 42161;
+      return { kind: "gitcoin", roundId, chainId };
+    }
+    case "Octant": {
+      const epoch = parseInt(identifier, 10);
+      return { kind: "octant", epochNumber: isNaN(epoch) ? undefined : epoch };
+    }
+    case "Manual URL list":
+      return { kind: "manual", urls: identifier.split(",").map((s) => s.trim()).filter(Boolean) };
+    default:
+      return { kind: "devspot", url: identifier };
   }
-  if (source === "Manual URL list") {
-    return { kind: "manual", urls: identifier.split(",").map((s) => s.trim()).filter(Boolean) };
-  }
-  return { kind: "devspot", url: identifier };
 }
 
 function slugify(title: string): string {
@@ -197,7 +220,9 @@ function formatOutput(raw: string): string {
 // Internal housekeeping actions that add no signal to the feed
 const NOISE_ACTIONS = new Set([
   "agent:start", "agent:done", "agent:output-ready", "agent:persisting-output",
-  "scout:adapter-devspot", "synthesis:start", "synthesis:llm-start", "synthesis:llm-done",
+  "scout:adapter-devspot", "scout:adapter-chainlink-hackathon",
+  "scout:adapter-devfolio", "scout:adapter-gitcoin", "scout:adapter-octant",
+  "synthesis:start", "synthesis:llm-start", "synthesis:llm-done",
   "synthesis:storing-payload", "adversarial:start", "evidence:start",
 ]);
 
@@ -434,8 +459,12 @@ export default function PipelinePage() {
           setActiveAction(`✓ ${msg.tool} — ${formatOutput(out)}`);
 
           // Scout: count raw projects from scraper output
-          if (msg.agent === "scout" &&
-            ["scrape_devspot_hackathon", "fetch_filecoin_dev_grants", "process_manual_urls"].includes(msg.tool)) {
+          const SCOUT_SCRAPER_TOOLS = new Set([
+            "scrape_devspot_hackathon", "fetch_filecoin_dev_grants", "process_manual_urls",
+            "scrape_chainlink_hackathon", "scrape_devfolio_hackathon",
+            "fetch_gitcoin_round", "fetch_octant_projects",
+          ]);
+          if (msg.agent === "scout" && SCOUT_SCRAPER_TOOLS.has(msg.tool)) {
             try {
               const projects = JSON.parse(out) as unknown;
               if (Array.isArray(projects)) {
@@ -576,6 +605,10 @@ export default function PipelinePage() {
                 className="text-xs text-[#374151] bg-transparent outline-none cursor-pointer disabled:opacity-50 py-3"
               >
                 <option>Devspot Hackathon</option>
+                <option>Chainlink Convergence</option>
+                <option>Devfolio</option>
+                <option>Gitcoin Grants</option>
+                <option>Octant</option>
                 <option>Filecoin Dev Grants</option>
                 <option>Manual URL list</option>
               </select>
@@ -586,7 +619,12 @@ export default function PipelinePage() {
               onChange={(e) => setIdentifier(e.target.value)}
               disabled={status === "running"}
               className="flex-1 text-xs font-mono text-[#374151] px-4 py-3.5 outline-none disabled:opacity-50 bg-transparent"
-              placeholder="Paste ecosystem URL or identifier…"
+              placeholder={
+                source === "Devfolio"       ? "ethbangkok  (subdomain slug or full URL)" :
+                source === "Gitcoin Grants" ? "42161/0xRoundAddress  (chainId/address)" :
+                source === "Octant"         ? "7  (epoch number, leave blank for latest)" :
+                "Paste ecosystem URL or identifier…"
+              }
             />
             {(status === "idle" || status === "error") && (
               <button

@@ -21,6 +21,34 @@ export type ETHGlobalShowcase = {
   eventSlug: string;
 };
 
+export type ChainlinkHackathon = {
+  kind: "chainlink-hackathon";
+  /** Gallery page URL, defaults to https://chain.link/hack-26 */
+  galleryUrl: string;
+  /** Optional limit for how many project detail pages to fetch */
+  maxProjects?: number;
+};
+
+export type Devfolio = {
+  kind: "devfolio";
+  /** Hackathon subdomain slug, e.g. "ethbangkok" */
+  hackathonSlug: string;
+};
+
+export type Gitcoin = {
+  kind: "gitcoin";
+  /** Grants round contract address */
+  roundId: string;
+  /** Chain ID where the round lives — defaults to 42161 (Arbitrum) */
+  chainId?: number;
+};
+
+export type Octant = {
+  kind: "octant";
+  /** Epoch number to fetch — omit for latest (epoch 7) */
+  epochNumber?: number;
+};
+
 export type ManualURLList = {
   kind: "manual";
   /** Array of project URLs — GitHub repos, websites, or mix */
@@ -39,5 +67,9 @@ export type EcosystemInput =
   | DevspotHackathon
   | FilecoinDevGrants
   | ETHGlobalShowcase
+  | ChainlinkHackathon
+  | Devfolio
+  | Gitcoin
+  | Octant
   | ManualURLList
   | GitHubRepo;

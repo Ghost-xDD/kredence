@@ -1,0 +1,54 @@
+{
+  "name": "kredence",
+  "version": "0.1.3",
+  "description": "TypeScript SDK for the Kredence autonomous impact intelligence API",
+  "keywords": [
+    "kredence",
+    "hypercerts",
+    "impact",
+    "evaluation",
+    "agents",
+    "web3",
+    "public-goods"
+  ],
+  "homepage": "https://kredence.xyz",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Ghost-xDD/credence"
+  },
+  "license": "MIT",
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    }
+  },
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@credence/types": "workspace:*",
+    "tsup": "^8.4.0",
+    "typescript": "^5.4.5"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
