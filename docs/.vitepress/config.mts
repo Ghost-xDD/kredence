@@ -86,6 +86,7 @@ export default defineConfig({
       {
         text: "Guides",
         items: [
+          { text: "Install the GitHub App", link: "/guides/github-app" },
           { text: "Embed a badge", link: "/guides/badge" },
           {
             text: "Build a portfolio dashboard",

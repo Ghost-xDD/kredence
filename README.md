@@ -4,7 +4,7 @@
 
 Kredence is a multi-agent system that discovers projects in a funding ecosystem, collects real evidence from GitHub, onchain activity, and deployments, adversarially challenges every impact claim, and produces continuously-updated hypercerts — without asking anyone to submit anything.
 
-[![Kredence](https://img.shields.io/endpoint?url=https://credenceserver-production.up.railway.app/badge/ghost-xdd-filefusion)](https://kredence.xyz)
+[![Kredence](https://img.shields.io/endpoint?url=https%3A%2F%2Fcredenceserver-production.up.railway.app%2Fbadge%2Fsafenote)](https://kredence.xyz)
 [![npm](https://img.shields.io/npm/v/kredence)](https://npmjs.com/package/kredence)
 [![docs](https://img.shields.io/badge/docs-docs.kredence.xyz-blue)](https://docs.kredence.xyz)
 
@@ -22,14 +22,15 @@ Kredence is a multi-agent system that discovers projects in a funding ecosystem,
 4. [Agent Identity & Receipts](#agent-identity--receipts)
 5. [Decentralised Storage](#decentralised-storage)
 6. [Hypercert Output](#hypercert-output)
-7. [Ecosystem Integrations](#ecosystem-integrations)
-8. [SDK](#sdk)
-9. [API](#api)
-10. [Architecture](#architecture)
-11. [Running Locally](#running-locally)
-12. [Agent Manifest](#agent-manifest)
-13. [Execution Logs](#execution-logs)
-14. [Tech Stack](#tech-stack)
+7. [GitHub App](#github-app)
+8. [Ecosystem Integrations](#ecosystem-integrations)
+9. [SDK](#sdk)
+10. [API](#api)
+11. [Architecture](#architecture)
+12. [Running Locally](#running-locally)
+13. [Agent Manifest](#agent-manifest)
+14. [Execution Logs](#execution-logs)
+15. [Tech Stack](#tech-stack)
 
 ---
 
@@ -255,6 +256,16 @@ Hypercerts are not minted once and forgotten. Every time a project ships new evi
 
 ---
 
+## GitHub App
+
+The fastest way to get your project evaluated. Install the Kredence GitHub App and every push to your default branch triggers a full pipeline run automatically — no manual invocations, no API calls.
+
+**[→ Install on GitHub](https://github.com/apps/kredence/installations/new)**
+
+After install, your project appears in the Kredence dashboard within minutes of your first push. The GitHub App will also open a PR adding a `.hypercert.json` file to your repository root after each evaluation.
+
+---
+
 ## Ecosystem Integrations
 
 Kredence connects to the following platforms natively. Point it at any of these and it discovers projects without manual enumeration.
@@ -339,7 +350,7 @@ The pipeline run streams live events — stage transitions, tool calls, project 
 ### Embed a badge
 
 ```markdown
-![Kredence](https://img.shields.io/endpoint?url=https://credenceserver-production.up.railway.app/badge/your-slug)
+![Kredence](https://img.shields.io/endpoint?url=https%3A%2F%2Fcredenceserver-production.up.railway.app%2Fbadge%2Fyour-slug)
 ```
 
 ---

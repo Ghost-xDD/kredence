@@ -29,7 +29,7 @@ curl https://credenceserver-production.up.railway.app/projects \
 ## Embed in a README
 
 ```markdown
-![Kredence](https://img.shields.io/endpoint?url=https://credenceserver-production.up.railway.app/badge/your-slug)
+![Kredence](https://img.shields.io/endpoint?url=https%3A%2F%2Fcredenceserver-production.up.railway.app%2Fbadge%2Fyour-slug)
 ```
 
 Replace `your-slug` with your project's slug.
@@ -37,7 +37,7 @@ Replace `your-slug` with your project's slug.
 ### With a link
 
 ```markdown
-[![Kredence](https://img.shields.io/endpoint?url=https://credenceserver-production.up.railway.app/badge/your-slug)](https://kredence.xyz)
+[![Kredence](https://img.shields.io/endpoint?url=https%3A%2F%2Fcredenceserver-production.up.railway.app%2Fbadge%2Fyour-slug)](https://kredence.xyz)
 ```
 
 ## Badge appearance
