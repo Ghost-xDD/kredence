@@ -9,7 +9,7 @@ import type {
 } from "./types.js";
 import { PipelineRun } from "./pipeline.js";
 
-const DEFAULT_BASE_URL = "https://api.kredence.xyz";
+const DEFAULT_BASE_URL = "https://credenceserver-production.up.railway.app";
 
 /**
  * Client for the Kredence API.
