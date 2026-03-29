@@ -76,6 +76,29 @@ export function Nav() {
               />
             </svg>
           </Link>
+          <Link
+            href="https://docs.kredence.xyz"
+            target="_blank"
+            rel="noopener"
+            className="hover:text-[#0a0a0a] transition-colors flex items-center gap-1"
+          >
+            Docs
+            <svg
+              width="10"
+              height="10"
+              viewBox="0 0 10 10"
+              fill="none"
+              className="opacity-40"
+            >
+              <path
+                d="M2 8L8 2M8 2H4M8 2V6"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </Link>
         </nav>
 
         {/* Right */}
