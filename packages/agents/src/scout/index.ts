@@ -17,6 +17,7 @@ import { scrapeChainlinkHackathon } from "./chainlink-hackathon.js";
 import { scrapeDevfolio } from "./devfolio.js";
 import { fetchGitcoinRound } from "./gitcoin.js";
 import { fetchOctantProjects } from "./octant.js";
+import { scrapeEthGlobal } from "./ethglobal.js";
 import { uploadJSON } from "@credence/storage";
 import { getOperatorWallet } from "../identity.js";
 
@@ -132,6 +133,22 @@ const octantTool = tool(
       "Fetch funded projects from Octant's public-goods funding platform for a given epoch.",
     schema: z.object({
       epochNumber: z.number().int().positive().optional().describe("Epoch number (omit for latest)"),
+    }),
+  }
+);
+
+const ethglobalTool = tool(
+  async ({ eventSlug, maxProjects }: { eventSlug: string; maxProjects?: number }) => {
+    const projects = await scrapeEthGlobal(eventSlug, maxProjects);
+    return JSON.stringify(projects);
+  },
+  {
+    name: "scrape_ethglobal_showcase",
+    description:
+      "Scrape all project submissions from an ETHGlobal hackathon showcase page. Input is the event slug (e.g. 'hackmoney2026', 'bangkok').",
+    schema: z.object({
+      eventSlug: z.string().describe("ETHGlobal event slug, e.g. 'hackmoney2026'"),
+      maxProjects: z.number().int().positive().optional().describe("Optional cap on projects to fetch"),
     }),
   }
 );
@@ -276,10 +293,15 @@ export async function runScoutAgent(
         }
 
         case "ethglobal": {
-          ctx.logger.log("warn", "plan", "scout:adapter-ethglobal-not-implemented", {
-            eventSlug: ecosystemInput.eventSlug,
-          });
-          throw new Error("ETHGlobal adapter not yet implemented — use manual URL list for now");
+          ctx.logger.log("info", "plan", "scout:adapter-ethglobal", { eventSlug: ecosystemInput.eventSlug });
+          const result = await ctx.logger.toolCall(
+            "execute",
+            "scrape_ethglobal_showcase",
+            { eventSlug: ecosystemInput.eventSlug },
+            async () => scrapeEthGlobal(ecosystemInput.eventSlug)
+          ) as Awaited<ReturnType<typeof scrapeEthGlobal>>;
+          rawProjects = result;
+          break;
         }
       }
 
@@ -336,4 +358,5 @@ export const scoutTools = [
   devfolioTool,
   gitcoinTool,
   octantTool,
+  ethglobalTool,
 ];

@@ -76,7 +76,7 @@ Output: ProjectManifest (all discovered projects + evidence sources)
          └── stored on Storacha with content-addressed CID
 ```
 
-Supported platforms: Gitcoin, Devspot, Devfolio, Filecoin Dev Grants, Octant, GitHub orgs, and manual URL lists.
+Supported platforms: Gitcoin, Devspot, Devfolio, Chainlink Hackathon, ETHGlobal, Filecoin Dev Grants, Octant, GitHub repos, and manual URL lists.
 
 The Scout Agent logs every adapter selection, project count, and resolution failure to a structured `agent_log.json` — a verifiable execution trail showing exactly how discovery happened.
 
@@ -277,6 +277,8 @@ Kredence connects to the following platforms natively. Point it at any of these 
 | **Gitcoin** | Round contract address | Grants Stack API — enumerates all funded applications |
 | **Devspot** | Hackathon URL | Scrapes project cards with pagination |
 | **Devfolio** | Hackathon slug | Devfolio API |
+| **Chainlink Hackathon** | Gallery URL | Crawls `chain.link/hack-*` gallery and each project detail page |
+| **ETHGlobal** | Event slug | Scrapes `ethglobal.com/showcase?events={slug}` and each project detail page |
 | **Filecoin Dev Grants** | GitHub repo | Issues API — parses grant proposals by label |
 | **Octant** | Epoch number | Octant API — fetches all epoch projects |
 | **GitHub** | Repo URL | Direct evaluation of a single repository |
