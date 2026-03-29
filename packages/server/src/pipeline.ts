@@ -90,9 +90,16 @@ export async function runPipeline(
     // All other adapters require both a GitHub source and a website source.
     const hasGithub  = (p: { sources: { type: string }[] }) => p.sources.some((s) => s.type === "github");
     const hasWebsite = (p: { sources: { type: string }[] }) => p.sources.some((s) => s.type === "website");
-    const selected = manifest.projects
-      .filter((p) => input.kind === "github-repo" ? hasGithub(p) : hasGithub(p) && hasWebsite(p))
-      .slice(0, maxProjects);
+    const filtered = manifest.projects
+      .filter((p) => input.kind === "github-repo" ? hasGithub(p) : hasGithub(p) && hasWebsite(p));
+
+    // Shuffle so each run analyzes a different random sample
+    for (let i = filtered.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [filtered[i], filtered[j]] = [filtered[j]!, filtered[i]!];
+    }
+
+    const selected = filtered.slice(0, maxProjects);
 
     const trimmedManifest = { ...manifest, projects: selected };
 

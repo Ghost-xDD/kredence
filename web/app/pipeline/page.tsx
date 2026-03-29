@@ -129,19 +129,21 @@ function formatElapsed(ms: number) {
   return `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
 }
 
-function buildPayload(source: string, identifier: string): EcosystemInput {
+function buildPayload(source: string, identifier: string, maxProjects: number): EcosystemInput {
   switch (source) {
     case "Filecoin Dev Grants":
       return { kind: "filecoin-devgrants", repo: identifier || "filecoin-project/devgrants" };
     case "Chainlink Convergence":
-      return { kind: "chainlink-hackathon", galleryUrl: identifier || "https://chain.link/hack-26" };
+      return { kind: "chainlink-hackathon", galleryUrl: identifier || "https://chain.link/hack-26", maxProjects };
+    case "ETHGlobal": {
+      const slug = identifier.replace(/^https?:\/\/ethglobal\.com\/showcase.*events=/, "").trim();
+      return { kind: "ethglobal", eventSlug: slug || "hackmoney2026" };
+    }
     case "Devfolio": {
-      // Accept either a full URL like https://ethbangkok.devfolio.co or just the slug
       const slug = identifier.replace(/^https?:\/\//, "").replace(/\.devfolio\.co.*$/, "").trim();
       return { kind: "devfolio", hackathonSlug: slug || "ethbangkok" };
     }
     case "Gitcoin Grants": {
-      // Accept "roundAddress" or "chainId/roundAddress"
       const parts = identifier.split("/");
       const roundId = parts.length >= 2 ? (parts[1] ?? "") : (parts[0] ?? "");
       const chainId = parts.length >= 2 ? parseInt(parts[0] ?? "42161", 10) : 42161;
@@ -151,6 +153,8 @@ function buildPayload(source: string, identifier: string): EcosystemInput {
       const epoch = parseInt(identifier, 10);
       return { kind: "octant", epochNumber: isNaN(epoch) ? undefined : epoch };
     }
+    case "GitHub Repo":
+      return { kind: "github-repo", repoUrl: identifier };
     case "Manual URL list":
       return { kind: "manual", urls: identifier.split(",").map((s) => s.trim()).filter(Boolean) };
     default:
@@ -222,6 +226,7 @@ const NOISE_ACTIONS = new Set([
   "agent:start", "agent:done", "agent:output-ready", "agent:persisting-output",
   "scout:adapter-devspot", "scout:adapter-chainlink-hackathon",
   "scout:adapter-devfolio", "scout:adapter-gitcoin", "scout:adapter-octant",
+  "scout:adapter-ethglobal", "scout:adapter-github-repo", "scout:adapter-filecoin",
   "synthesis:start", "synthesis:llm-start", "synthesis:llm-done",
   "synthesis:storing-payload", "adversarial:start", "evidence:start",
 ]);
@@ -234,10 +239,28 @@ export default function PipelinePage() {
   const [events, setEvents]               = useState<PipelineEvent[]>([]);
   const [completedProjects, setCompleted] = useState<CompletedProject[]>([]);
   const [elapsedMs, setElapsedMs]         = useState(0);
+  const SOURCE_DEFAULTS: Record<string, string> = {
+    "Devspot Hackathon":    "https://pl-genesis-frontiers-of-collaboration-hackathon.devspot.app/?activeTab=projects",
+    "ETHGlobal":            "hackmoney2026",
+    "Chainlink Convergence":"https://chain.link/hack-26",
+    "Devfolio":             "",
+    "Gitcoin Grants":       "",
+    "Octant":               "",
+    "Filecoin Dev Grants":  "filecoin-project/devgrants",
+    "GitHub Repo":          "",
+    "Manual URL list":      "",
+  };
+
   const [source, setSource]               = useState("Devspot Hackathon");
+  const handleSourceChange = (val: string) => {
+    setSource(val);
+    const def = SOURCE_DEFAULTS[val];
+    if (def !== undefined) setIdentifier(def);
+  };
   const [identifier, setIdentifier]       = useState(
     "https://pl-genesis-frontiers-of-collaboration-hackathon.devspot.app/?activeTab=projects"
   );
+  const [maxProjects, setMaxProjects] = useState(5);
 
   // Live agent state
   const [activeAgent, setActiveAgent]   = useState<Agent | null>(null);
@@ -328,7 +351,7 @@ export default function PipelinePage() {
     startedAtRef.current = startMs;
     timerRef.current = setInterval(() => setElapsedMs(Date.now() - startMs), 250);
 
-    const payload = buildPayload(source, identifier);
+    const payload = buildPayload(source, identifier, maxProjects);
     const ws = new WebSocket(WS_URL);
     wsRef.current = ws;
 
@@ -345,7 +368,7 @@ export default function PipelinePage() {
 
       switch (msg.type) {
         case "ready": {
-          ws.send(JSON.stringify({ type: "run", payload, maxProjects: 3 }));
+          ws.send(JSON.stringify({ type: "run", payload, maxProjects }));
           break;
         }
 
@@ -462,7 +485,7 @@ export default function PipelinePage() {
           const SCOUT_SCRAPER_TOOLS = new Set([
             "scrape_devspot_hackathon", "fetch_filecoin_dev_grants", "process_manual_urls",
             "scrape_chainlink_hackathon", "scrape_devfolio_hackathon",
-            "fetch_gitcoin_round", "fetch_octant_projects",
+            "fetch_gitcoin_round", "fetch_octant_projects", "scrape_ethglobal_showcase",
           ]);
           if (msg.agent === "scout" && SCOUT_SCRAPER_TOOLS.has(msg.tool)) {
             try {
@@ -600,16 +623,18 @@ export default function PipelinePage() {
             <div className="hidden sm:flex items-center border-r border-[#e5e7eb] px-3 shrink-0">
               <select
                 value={source}
-                onChange={(e) => setSource(e.target.value)}
+                onChange={(e) => handleSourceChange(e.target.value)}
                 disabled={status === "running"}
                 className="text-xs text-[#374151] bg-transparent outline-none cursor-pointer disabled:opacity-50 py-3"
               >
                 <option>Devspot Hackathon</option>
+                <option>ETHGlobal</option>
                 <option>Chainlink Convergence</option>
                 <option>Devfolio</option>
                 <option>Gitcoin Grants</option>
                 <option>Octant</option>
                 <option>Filecoin Dev Grants</option>
+                <option>GitHub Repo</option>
                 <option>Manual URL list</option>
               </select>
             </div>
@@ -620,9 +645,14 @@ export default function PipelinePage() {
               disabled={status === "running"}
               className="flex-1 text-xs font-mono text-[#374151] px-4 py-3.5 outline-none disabled:opacity-50 bg-transparent"
               placeholder={
-                source === "Devfolio"       ? "ethbangkok  (subdomain slug or full URL)" :
-                source === "Gitcoin Grants" ? "42161/0xRoundAddress  (chainId/address)" :
-                source === "Octant"         ? "7  (epoch number, leave blank for latest)" :
+                source === "Devfolio"            ? "ethbangkok  (subdomain slug or full URL)" :
+                source === "Gitcoin Grants"       ? "42161/0xRoundAddress  (chainId/address)" :
+                source === "Octant"               ? "7  (epoch number, leave blank for latest)" :
+                source === "ETHGlobal"            ? "hackmoney2026  (event slug)" :
+                source === "GitHub Repo"          ? "https://github.com/owner/repo" :
+                source === "Chainlink Convergence"? "https://chain.link/hack-26" :
+                source === "Filecoin Dev Grants"  ? "filecoin-project/devgrants" :
+                source === "Manual URL list"      ? "https://url1.com, https://url2.com, …" :
                 "Paste ecosystem URL or identifier…"
               }
             />
@@ -648,6 +678,24 @@ export default function PipelinePage() {
                 Reset
               </button>
             )}
+          </div>
+
+          {/* Max projects */}
+          <div className="mt-2.5 flex items-center justify-end gap-2">
+            <span className="text-[11px] text-[#c4c8cf]">analyze up to</span>
+            <input
+              type="number"
+              min={1}
+              max={20}
+              value={maxProjects}
+              onChange={(e) => {
+                const v = parseInt(e.target.value) || 1;
+                setMaxProjects(Math.min(Math.max(v, 1), 20));
+              }}
+              disabled={status === "running"}
+              className="w-8 text-center text-[11px] font-mono text-[#6b7280] bg-transparent border-b border-[#e5e7eb] outline-none focus:border-[#9ca3af] transition-colors disabled:opacity-40 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+            />
+            <span className="text-[11px] text-[#c4c8cf]">projects</span>
           </div>
 
           {/* Error banner */}

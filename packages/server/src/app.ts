@@ -243,7 +243,7 @@ export function createApp() {
         }
 
         const runId = nanoid();
-        const maxProjects = Math.min(msg.maxProjects ?? 3, 10); // hard cap at 10
+        const maxProjects = Math.min(msg.maxProjects ?? 5, 20);
         runActive = true;
 
         console.log(
