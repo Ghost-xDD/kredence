@@ -13,7 +13,8 @@
     "test:scout": "pnpm build:packages && cd scripts && ../node_modules/.bin/tsx test-scout.ts",
     "test:evidence": "pnpm build:packages && cd scripts && ../node_modules/.bin/tsx test-evidence.ts",
     "test:adversarial": "pnpm build:packages && cd scripts && ../node_modules/.bin/tsx test-adversarial.ts",
-    "test:pipeline": "pnpm build:packages && cd scripts && ../node_modules/.bin/tsx test-pipeline.ts"
+    "test:pipeline": "pnpm build:packages && cd scripts && ../node_modules/.bin/tsx test-pipeline.ts",
+    "migrate:hypercerts": "pnpm build:packages && cd scripts && ../node_modules/.bin/tsx migrate-hypercerts.ts"
   },
   "devDependencies": {
     "dotenv": "^17.3.1",

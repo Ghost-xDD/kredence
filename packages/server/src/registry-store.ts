@@ -131,14 +131,18 @@ export async function persistRegistry(
   store = updated;
   currentCid = newCid;
 
-  // ── 1. Redis (primary) ───────────────────────────────────────────────────
+  // ── 1. Redis (primary) — retry once on failure ───────────────────────────
   const redis = getRedis();
   if (redis) {
-    try {
-      await redis.set(REDIS_KEY, updated);
-      console.log(`[registry] saved to Redis (${updated.entries.length} entries)`);
-    } catch (err) {
-      console.error("[registry] Redis write failed:", err instanceof Error ? err.message : err);
+    for (let attempt = 1; attempt <= 2; attempt++) {
+      try {
+        await redis.set(REDIS_KEY, updated);
+        console.log(`[registry] saved to Redis (${updated.entries.length} entries)`);
+        break;
+      } catch (err) {
+        console.error(`[registry] Redis write failed (attempt ${attempt}):`, err instanceof Error ? err.message : err);
+        if (attempt === 1) await new Promise((r) => setTimeout(r, 2_000));
+      }
     }
   }
 
