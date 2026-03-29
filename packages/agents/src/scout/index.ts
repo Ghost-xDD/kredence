@@ -14,6 +14,9 @@ import { runAgent } from "../runner.js";
 import { scrapeDevspot } from "./devspot.js";
 import { fetchFilecoinDevGrants } from "./filecoin-devgrants.js";
 import { scrapeChainlinkHackathon } from "./chainlink-hackathon.js";
+import { scrapeDevfolio } from "./devfolio.js";
+import { fetchGitcoinRound } from "./gitcoin.js";
+import { fetchOctantProjects } from "./octant.js";
 import { uploadJSON } from "@credence/storage";
 import { getOperatorWallet } from "../identity.js";
 
@@ -83,6 +86,52 @@ const chainlinkHackathonTool = tool(
     schema: z.object({
       galleryUrl: z.string().url().describe("Chainlink hackathon gallery URL"),
       maxProjects: z.number().int().positive().optional().describe("Optional cap on detail pages to fetch"),
+    }),
+  }
+);
+
+const devfolioTool = tool(
+  async ({ hackathonSlug }: { hackathonSlug: string }) => {
+    const projects = await scrapeDevfolio(hackathonSlug);
+    return JSON.stringify(projects);
+  },
+  {
+    name: "scrape_devfolio_hackathon",
+    description:
+      "Fetch all projects from a Devfolio hackathon by subdomain slug (e.g. 'ethbangkok').",
+    schema: z.object({
+      hackathonSlug: z.string().describe("Devfolio hackathon subdomain slug"),
+    }),
+  }
+);
+
+const gitcoinTool = tool(
+  async ({ roundId, chainId }: { roundId: string; chainId?: number }) => {
+    const projects = await fetchGitcoinRound(roundId, chainId);
+    return JSON.stringify(projects);
+  },
+  {
+    name: "fetch_gitcoin_round",
+    description:
+      "Fetch grant applications from a Gitcoin Grants Stack round using the public indexer.",
+    schema: z.object({
+      roundId: z.string().describe("Grants round contract address"),
+      chainId: z.number().int().positive().optional().describe("Chain ID (default: 42161 Arbitrum)"),
+    }),
+  }
+);
+
+const octantTool = tool(
+  async ({ epochNumber }: { epochNumber?: number }) => {
+    const projects = await fetchOctantProjects(epochNumber);
+    return JSON.stringify(projects);
+  },
+  {
+    name: "fetch_octant_projects",
+    description:
+      "Fetch funded projects from Octant's public-goods funding platform for a given epoch.",
+    schema: z.object({
+      epochNumber: z.number().int().positive().optional().describe("Epoch number (omit for latest)"),
     }),
   }
 );
@@ -172,6 +221,42 @@ export async function runScoutAgent(
           break;
         }
 
+        case "devfolio": {
+          ctx.logger.log("info", "plan", "scout:adapter-devfolio", { hackathonSlug: ecosystemInput.hackathonSlug });
+          const result = await ctx.logger.toolCall(
+            "execute",
+            "scrape_devfolio_hackathon",
+            { hackathonSlug: ecosystemInput.hackathonSlug },
+            async () => scrapeDevfolio(ecosystemInput.hackathonSlug)
+          ) as Awaited<ReturnType<typeof scrapeDevfolio>>;
+          rawProjects = result;
+          break;
+        }
+
+        case "gitcoin": {
+          ctx.logger.log("info", "plan", "scout:adapter-gitcoin", { roundId: ecosystemInput.roundId, chainId: ecosystemInput.chainId });
+          const result = await ctx.logger.toolCall(
+            "execute",
+            "fetch_gitcoin_round",
+            { roundId: ecosystemInput.roundId, chainId: ecosystemInput.chainId },
+            async () => fetchGitcoinRound(ecosystemInput.roundId, ecosystemInput.chainId)
+          ) as Awaited<ReturnType<typeof fetchGitcoinRound>>;
+          rawProjects = result;
+          break;
+        }
+
+        case "octant": {
+          ctx.logger.log("info", "plan", "scout:adapter-octant", { epochNumber: ecosystemInput.epochNumber });
+          const result = await ctx.logger.toolCall(
+            "execute",
+            "fetch_octant_projects",
+            { epochNumber: ecosystemInput.epochNumber },
+            async () => fetchOctantProjects(ecosystemInput.epochNumber)
+          ) as Awaited<ReturnType<typeof fetchOctantProjects>>;
+          rawProjects = result;
+          break;
+        }
+
         case "github-repo": {
           // Single-repo input from the GitHub App webhook — no discovery needed.
           const repoUrl = ecosystemInput.repoUrl.replace(/\.git$/, "").replace(/\/$/, "");
@@ -243,4 +328,12 @@ export async function runScoutAgent(
 }
 
 // Export tools for use in higher-level agents if needed
-export const scoutTools = [devspotTool, filecoinDevGrantsTool, manualUrlTool, chainlinkHackathonTool];
+export const scoutTools = [
+  devspotTool,
+  filecoinDevGrantsTool,
+  manualUrlTool,
+  chainlinkHackathonTool,
+  devfolioTool,
+  gitcoinTool,
+  octantTool,
+];
