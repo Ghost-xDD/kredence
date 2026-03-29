@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Nav } from "../components/nav";
 
@@ -239,6 +240,8 @@ export default function PipelinePage() {
   const [events, setEvents]               = useState<PipelineEvent[]>([]);
   const [completedProjects, setCompleted] = useState<CompletedProject[]>([]);
   const [elapsedMs, setElapsedMs]         = useState(0);
+  const searchParams = useSearchParams();
+
   const SOURCE_DEFAULTS: Record<string, string> = {
     "Devspot Hackathon":    "https://pl-genesis-frontiers-of-collaboration-hackathon.devspot.app/?activeTab=projects",
     "ETHGlobal":            "hackmoney2026",
@@ -251,13 +254,14 @@ export default function PipelinePage() {
     "Manual URL list":      "",
   };
 
-  const [source, setSource]               = useState("Devspot Hackathon");
+  const [source, setSource]               = useState(() => searchParams.get("source") ?? "Devspot Hackathon");
   const handleSourceChange = (val: string) => {
     setSource(val);
     const def = SOURCE_DEFAULTS[val];
     if (def !== undefined) setIdentifier(def);
   };
-  const [identifier, setIdentifier]       = useState(
+  const [identifier, setIdentifier]       = useState(() =>
+    searchParams.get("identifier") ??
     "https://pl-genesis-frontiers-of-collaboration-hackathon.devspot.app/?activeTab=projects"
   );
   const [maxProjects, setMaxProjects] = useState(5);

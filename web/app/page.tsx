@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Nav } from "./components/nav";
+import { HeroInput } from "./components/hero-input";
 import type { HypercertRegistry, RegistryEntry } from "@credence/types";
 
 const SERVER_URL =
@@ -113,42 +114,7 @@ export default async function Home() {
             publish verifiable hypercerts for any project ecosystem.
           </p>
 
-          {/* CTA — links straight to the pipeline runner */}
-          <div className="max-w-lg mx-auto mb-4">
-            <div className="flex items-center border border-[#e5e7eb] rounded-xl bg-white shadow-[0_4px_20px_rgba(0,0,0,0.08)] px-4 py-3.5 gap-3">
-              <svg width="15" height="15" viewBox="0 0 15 15" fill="none" className="text-[#9ca3af] shrink-0">
-                <circle cx="6.5" cy="6.5" r="5" stroke="currentColor" strokeWidth="1.4" />
-                <path d="M10.5 10.5L13.5 13.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
-              </svg>
-              <span className="flex-1 text-sm text-[#9ca3af] text-left select-none">
-                Paste a hackathon URL, grant page, or ecosystem link…
-              </span>
-              <Link
-                href="/pipeline"
-                className="text-xs font-medium bg-[#0a0a0a] text-white px-3.5 py-1.5 rounded-lg hover:bg-[#1f2937] transition-colors shrink-0"
-              >
-                Evaluate
-              </Link>
-            </div>
-          </div>
-
-          {/* Ecosystem chips */}
-          <div className="flex flex-wrap justify-center gap-2 mb-14">
-            {[
-              { label: "PL Genesis Hackathon", href: "/pipeline" },
-              { label: "Filecoin Dev Grants",  href: "/pipeline" },
-              { label: "ETHGlobal",            href: "/pipeline" },
-              { label: "Manual URL list",      href: "/pipeline" },
-            ].map((e) => (
-              <Link
-                key={e.label}
-                href={e.href}
-                className="text-xs px-3 py-1 rounded-full bg-white border border-[#e5e7eb] text-[#374151] hover:border-[#d1d5db] hover:shadow-sm transition-all"
-              >
-                {e.label}
-              </Link>
-            ))}
-          </div>
+          <HeroInput />
 
           {/* Live stats */}
           <div className="grid grid-cols-2 sm:grid-cols-4 border border-[#e5e7eb] rounded-2xl overflow-hidden bg-white shadow-[0_1px_6px_rgba(0,0,0,0.05)] divide-x divide-y sm:divide-y-0 divide-[#e5e7eb]">
