@@ -8,6 +8,8 @@ Kredence is a multi-agent system that discovers projects in a funding ecosystem,
 [![npm](https://img.shields.io/npm/v/kredence)](https://npmjs.com/package/kredence)
 [![docs](https://img.shields.io/badge/docs-docs.kredence.xyz-blue)](https://docs.kredence.xyz)
 
+**[Website](https://kredence.xyz)** · **[Docs](https://docs.kredence.xyz)** · **[API](https://credenceserver-production.up.railway.app/health)** · **[npm](https://npmjs.com/package/kredence)** · **[Install GitHub App](https://github.com/apps/kredence-app/installations/new)**
+
 ---
 
 ## Table of Contents
