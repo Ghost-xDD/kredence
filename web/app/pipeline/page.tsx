@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { Suspense, useState, useEffect, useRef, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Nav } from "../components/nav";
@@ -235,6 +235,14 @@ const NOISE_ACTIONS = new Set([
 // ── Component ──────────────────────────────────────────────────────────────
 
 export default function PipelinePage() {
+  return (
+    <Suspense>
+      <PipelinePageInner />
+    </Suspense>
+  );
+}
+
+function PipelinePageInner() {
   const [status, setStatus]               = useState<"idle" | "running" | "done" | "error">("idle");
   const [errorMsg, setErrorMsg]           = useState<string | null>(null);
   const [events, setEvents]               = useState<PipelineEvent[]>([]);

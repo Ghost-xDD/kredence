@@ -19,6 +19,8 @@ export type RegistryEntry = {
   contributors: string[];
   hasAtproto: boolean;
   atprotoUrl?: string;
+  /** Which ecosystem adapter produced this entry (e.g. "devspot", "ethglobal"). */
+  ecosystemKind?: string;
   /** Pipeline run that produced this entry. */
   runId: string;
   evaluatedAt: string; // ISO timestamp

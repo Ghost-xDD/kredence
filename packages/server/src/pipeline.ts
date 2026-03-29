@@ -86,12 +86,18 @@ export async function runPipeline(
     const manifest = await runScoutAgent(input, makeOnEntry(runId, "scout", emit));
     emit({ type: "stage_done", runId, stage: "scout" });
 
-    // github-repo inputs have only a GitHub source (no website to discover upfront).
-    // All other adapters require both a GitHub source and a website source.
     const hasGithub  = (p: { sources: { type: string }[] }) => p.sources.some((s) => s.type === "github");
     const hasWebsite = (p: { sources: { type: string }[] }) => p.sources.some((s) => s.type === "website");
+
+    // Sources that surface projects via GitHub issue/repo links — no website required.
+    const githubOnlyKinds = new Set(["github-repo", "filecoin-devgrants"]);
+
     const filtered = manifest.projects
-      .filter((p) => input.kind === "github-repo" ? hasGithub(p) : hasGithub(p) && hasWebsite(p));
+      .filter((p) =>
+        githubOnlyKinds.has(input.kind)
+          ? hasGithub(p)
+          : hasGithub(p) && hasWebsite(p)
+      );
 
     // Shuffle so each run analyzes a different random sample
     for (let i = filtered.length - 1; i > 0; i--) {
@@ -161,6 +167,7 @@ export async function runPipeline(
         contributors: p.contributors.map((c) => c.name),
         hasAtproto: !!p.atproto,
         atprotoUrl: p.atproto?.hyperscanUrl,
+        ecosystemKind: input.kind,
         runId,
         evaluatedAt: p.generatedAt,
       }));
