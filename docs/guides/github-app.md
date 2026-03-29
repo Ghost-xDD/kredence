@@ -20,7 +20,7 @@ Your badge automatically reflects the new score after each run.
 
 Click the button below to install the Kredence GitHub App on your account or organisation:
 
-**[→ Install Kredence on GitHub](https://github.com/apps/kredence/installations/new)**
+**[→ Install Kredence on GitHub](https://github.com/apps/kredence-app/installations/new)**
 
 You can scope the installation to specific repositories or grant access to all repositories.
 

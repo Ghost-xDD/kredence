@@ -260,7 +260,7 @@ Hypercerts are not minted once and forgotten. Every time a project ships new evi
 
 The fastest way to get your project evaluated. Install the Kredence GitHub App and every push to your default branch triggers a full pipeline run automatically — no manual invocations, no API calls.
 
-**[→ Install on GitHub](https://github.com/apps/kredence/installations/new)**
+**[→ Install on GitHub](https://github.com/apps/kredence-app/installations/new)**
 
 After install, your project appears in the Kredence dashboard within minutes of your first push. The GitHub App will also open a PR adding a `.hypercert.json` file to your repository root after each evaluation.
 
