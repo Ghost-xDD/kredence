@@ -1,0 +1,76 @@
+{
+  "title": "Ghost-xDD/kredence",
+  "description": "Kredence is a decentralized identity and credential verification system with a focus on privacy and security, as evidenced by its GitHub repository with 5 contributors and 20 commits in the last 90 days.",
+  "contributors": [],
+  "timeframeStart": "2025-12-29",
+  "timeframeEnd": "2026-03-29",
+  "impactCategory": [
+    "identity",
+    "privacy"
+  ],
+  "workScopes": [
+    "decentralized identity verification",
+    "credential verification",
+    "privacy-focused security",
+    "blockchain integration",
+    "secure data handling"
+  ],
+  "evidenceRefs": [
+    {
+      "label": "Evidence Bundle",
+      "url": "https://bafkreid5at6g7pukaxpbk55ymgyp76cjrxgndgetggixwep5q7pdzst6ie.ipfs.storacha.link",
+      "storachaCid": "bafkreid5at6g7pukaxpbk55ymgyp76cjrxgndgetggixwep5q7pdzst6ie"
+    },
+    {
+      "label": "Adversarial Log (Signed Receipt)",
+      "url": "https://bafkreiancw7ln3iln7d426x77kdqhgcxdbniuc2bf3luqzwdydiweagxmi.ipfs.storacha.link",
+      "storachaCid": "bafkreiancw7ln3iln7d426x77kdqhgcxdbniuc2bf3luqzwdydiweagxmi"
+    }
+  ],
+  "verifiedClaims": [],
+  "flaggedClaims": [],
+  "openQuestions": [],
+  "evaluatorSummary": "Kredence has demonstrated active development with 20 commits in the last 90 days and contributions from 5 different developers, indicating ongoing work and community engagement. The project focuses on decentralized identity and credential verification, emphasizing privacy and security. While the GitHub activity shows a moderate level of engagement, no specific metrics or user adoption data were provided to verify broader impact claims. Funders should consider the project's technical focus and active development as positive indicators, but should seek additional evidence of real-world application and user impact.",
+  "confidenceScore": 0,
+  "evaluatedBy": [
+    {
+      "agentId": "3040",
+      "agentRegistry": "eip155:84532:0x8004A818BFB912233c491871b3d84c89A494BD9e",
+      "role": "scout",
+      "operatorWallet": "0x134e3dD08dbf085adE908c894aD137157c35aa48"
+    },
+    {
+      "agentId": "3041",
+      "agentRegistry": "eip155:84532:0x8004A818BFB912233c491871b3d84c89A494BD9e",
+      "role": "evidence",
+      "operatorWallet": "0x134e3dD08dbf085adE908c894aD137157c35aa48"
+    },
+    {
+      "agentId": "3042",
+      "agentRegistry": "eip155:84532:0x8004A818BFB912233c491871b3d84c89A494BD9e",
+      "role": "adversarial",
+      "operatorWallet": "0x134e3dD08dbf085adE908c894aD137157c35aa48"
+    },
+    {
+      "agentId": "3043",
+      "agentRegistry": "eip155:84532:0x8004A818BFB912233c491871b3d84c89A494BD9e",
+      "role": "synthesis",
+      "operatorWallet": "0x134e3dD08dbf085adE908c894aD137157c35aa48"
+    }
+  ],
+  "storachaRefs": {
+    "evidenceBundleCid": "bafkreid5at6g7pukaxpbk55ymgyp76cjrxgndgetggixwep5q7pdzst6ie",
+    "adversarialLogCid": "bafkreiancw7ln3iln7d426x77kdqhgcxdbniuc2bf3luqzwdydiweagxmi",
+    "hypercertPayloadCid": "bafkreidgru7u6i2zkznavxq4s2okkrntihq677chyc5gjie4x63wbqfqxm"
+  },
+  "generatedAt": "2026-03-29T17:38:45.794Z",
+  "atproto": {
+    "activityUri": "at://did:plc:fke3rhssj7rdghxee2t73x73/org.hypercerts.claim.activity/3mi7oulkoxc2k",
+    "activityCid": "bafyreifrx73heexqcky32bp7kqna3vckbo5rm6bar2h4uc5xffsebhvnj4",
+    "evaluationUri": "at://did:plc:fke3rhssj7rdghxee2t73x73/org.hypercerts.context.evaluation/3mi7oumjh4y2j",
+    "evaluationCid": "bafyreicasgdnhdiweupgbyg2bf2z6tdvbopiojwiqprz6h3qv4e6oygsri",
+    "attachmentUri": "at://did:plc:fke3rhssj7rdghxee2t73x73/org.hypercerts.context.attachment/3mi7oumbldn2u",
+    "attachmentCid": "bafyreiayul6eampil5frl5dbat4g75nquzdccrmnlj3bjmqguaqltf7gce",
+    "hyperscanUrl": "https://www.hyperscan.dev/data?did=did%3Aplc%3Afke3rhssj7rdghxee2t73x73&collection=org.hypercerts.claim.activity&rkey=3mi7oulkoxc2k"
+  }
+}
