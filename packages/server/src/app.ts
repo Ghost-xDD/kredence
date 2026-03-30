@@ -32,7 +32,7 @@ import { WebSocketServer, WebSocket } from "ws";
 import { nanoid } from "nanoid";
 import { runPipeline } from "./pipeline.js";
 import type { ClientMessage, ServerMessage } from "./ws-types.js";
-import { getRegistry, findEntry, initRegistry } from "./registry-store.js";
+import { getRegistry, findEntry, initRegistry, reloadRegistry } from "./registry-store.js";
 import { retrieveJSON } from "@credence/storage";
 import { enqueueWebhookJob } from "./webhook-queue.js";
 
@@ -125,6 +125,30 @@ export function createApp() {
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
       res.status(502).json({ error: "failed to fetch from Storacha", detail: msg });
+    }
+  });
+
+  /**
+   * POST /admin/reload
+   * Reload the in-memory registry from Redis without a server restart.
+   * Protected by ADMIN_SECRET env var (Bearer token).
+   */
+  app.post("/admin/reload", async (req, res) => {
+    const secret = process.env["ADMIN_SECRET"];
+    if (secret) {
+      const auth = req.headers["authorization"] ?? "";
+      if (auth !== `Bearer ${secret}`) {
+        res.status(401).json({ error: "unauthorized" });
+        return;
+      }
+    }
+    try {
+      const result = await reloadRegistry();
+      console.log(`[admin] registry reloaded: ${result.entries} entries from ${result.source}`);
+      res.json({ ok: true, ...result });
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      res.status(500).json({ error: msg });
     }
   });
 

@@ -71,6 +71,28 @@ async function seedFromIPNS(): Promise<void> {
   }
 }
 
+/**
+ * Reload the in-memory registry from Redis (or IPNS fallback).
+ * Safe to call at any time — replaces the in-memory store atomically.
+ */
+export async function reloadRegistry(): Promise<{ entries: number; source: string }> {
+  const redis = getRedis();
+  if (redis) {
+    try {
+      const raw = await redis.get<HypercertRegistry>(REDIS_KEY);
+      if (raw) {
+        store = raw;
+        console.log(`[registry] reloaded ${store.entries.length} entries from Redis`);
+        return { entries: store.entries.length, source: "redis" };
+      }
+    } catch (err) {
+      console.warn("[registry] Redis reload failed:", err instanceof Error ? err.message : err);
+    }
+  }
+  await seedFromIPNS();
+  return { entries: store.entries.length, source: "ipns" };
+}
+
 /** Seed the registry on startup. Redis is tried first; IPNS is the fallback. */
 export async function initRegistry(): Promise<void> {
   const seed = async () => {
