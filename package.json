@@ -14,7 +14,9 @@
     "test:evidence": "pnpm build:packages && cd scripts && ../node_modules/.bin/tsx test-evidence.ts",
     "test:adversarial": "pnpm build:packages && cd scripts && ../node_modules/.bin/tsx test-adversarial.ts",
     "test:pipeline": "pnpm build:packages && cd scripts && ../node_modules/.bin/tsx test-pipeline.ts",
-    "migrate:hypercerts": "pnpm build:packages && cd scripts && ../node_modules/.bin/tsx migrate-hypercerts.ts"
+    "migrate:hypercerts": "pnpm build:packages && cd scripts && ../node_modules/.bin/tsx migrate-hypercerts.ts",
+    "cleanup:registry": "cd scripts && ../node_modules/.bin/tsx cleanup-registry.ts",
+    "purge:broken": "cd scripts && ../node_modules/.bin/tsx purge-broken.ts"
   },
   "devDependencies": {
     "dotenv": "^17.3.1",
