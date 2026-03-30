@@ -427,72 +427,100 @@ pnpm dev
 ### Run a test pipeline
 
 ```bash
-cd scripts
-tsx test-pipeline.ts
+pnpm test:pipeline
 ```
 
-This runs the full Scout → Evidence → Adversarial → Synthesis pipeline against a real ecosystem and outputs hypercert payloads.
+This runs the full Scout → Evidence → Adversarial → Synthesis pipeline against a real ecosystem, outputs hypercert payloads, and writes two artefacts to the project root:
+
+- **`agent.json`** — machine-readable capability manifest (operator, agent IDs, tools, constraints)
+- **`agent_log.json`** — structured execution log for the run (decisions, tool calls, timings, results)
 
 ---
 
 ## Agent Manifest
 
-Each agent includes a machine-readable `agent.json` capability manifest:
+`agent.json` at the project root is the machine-readable capability manifest for the full Kredence system. It declares the operator, all four ERC-8004 agent identities, every external tool, and the compute constraints for a pipeline run.
 
 ```json
 {
-  "name": "Kredence Adversarial Agent",
-  "version": "0.1.0",
-  "description": "Challenges every impact claim in an evidence bundle. Produces signed objection receipts.",
-  "agentId": "42",
-  "agentRegistry": "eip155:8453:0x8004A169FB4a3325136EB29fA0ceB6D2e539a432",
-  "operatorWallet": "0xYourWallet",
-  "role": "adversarial",
-  "supportedTools": ["llm_completion", "web_fetch", "github_api", "storacha_upload"],
-  "supportedTaskCategories": ["claim_challenge", "evidence_verification", "objection_logging"],
-  "computeConstraints": {
-    "maxDurationMs": 120000,
-    "maxLlmCalls": 20,
-    "maxExternalRequests": 50
+  "schema": "https://eips.ethereum.org/EIPS/eip-8004#agent-manifest-v1",
+  "name": "Kredence Autonomous Impact Intelligence",
+  "operator": {
+    "wallet": "0x134e3dD08dbf085adE908c894aD137157c35aa48",
+    "chain": "eip155:84532",
+    "registry": "0x8004A818BFB912233c491871b3d84c89A494BD9e"
   },
-  "services": [
-    { "type": "api", "url": "https://credenceserver-production.up.railway.app" }
-  ]
+  "agents": [
+    { "role": "scout",       "agentId": 3040, "erc8004": "eip155:84532:0x8004A818BFB912233c491871b3d84c89A494BD9e:3040" },
+    { "role": "evidence",    "agentId": 3041, "erc8004": "eip155:84532:0x8004A818BFB912233c491871b3d84c89A494BD9e:3041" },
+    { "role": "adversarial", "agentId": 3042, "erc8004": "eip155:84532:0x8004A818BFB912233c491871b3d84c89A494BD9e:3042" },
+    { "role": "synthesis",   "agentId": 3043, "erc8004": "eip155:84532:0x8004A818BFB912233c491871b3d84c89A494BD9e:3043" }
+  ],
+  "pipeline": {
+    "decisionLoop": "discover → plan → execute → verify → submit",
+    "humanInvolvement": "none after initial launch"
+  },
+  "computeConstraints": {
+    "maxProjectsPerRun": 10,
+    "maxLLMCallsPerProject": 12,
+    "maxRetries": 3,
+    "timeoutPerStageMs": 120000
+  }
 }
 ```
+
+See [`agent.json`](./agent.json) for the full manifest including all tools, task categories, and tech stack.
 
 ---
 
 ## Execution Logs
 
-Every pipeline run produces a structured `agent_log.json` for each agent, showing every decision, tool call, retry, and failure:
+Every `pnpm test:pipeline` run writes `agent_log.json` to the project root alongside `agent.json`. It records every decision, tool call, stage timing, retry, and final output — providing a complete, replayable audit trail.
 
 ```json
 {
-  "agentId": "42",
-  "role": "adversarial",
-  "runId": "v8Kj3mNp",
-  "startedAt": "2026-03-28T16:30:00.000Z",
-  "completedAt": "2026-03-28T16:31:42.000Z",
-  "exitStatus": "success",
-  "entries": [
+  "run_id": "run-1774911800825",
+  "started_at": "2026-03-30T23:03:20.825Z",
+  "finished_at": "2026-03-30T23:06:27.457Z",
+  "status": "completed",
+  "operator_wallet": "0x134e3dD08dbf085adE908c894aD137157c35aa48",
+  "agent_ids": { "scout": 3040, "evidence": 3041, "adversarial": 3042, "synthesis": 3043 },
+  "summary": {
+    "projects_selected": 3,
+    "hypercerts_stored": 3,
+    "atproto_published": 3,
+    "total_verified_claims": 13,
+    "total_flagged_claims": 10,
+    "duration_ms": 186632
+  },
+  "stages": {
+    "scout":       { "status": "completed", "duration_ms": 39887 },
+    "evidence":    { "status": "completed", "duration_ms": 47896 },
+    "adversarial": { "status": "completed", "duration_ms": 43306 },
+    "synthesis":   { "status": "completed", "duration_ms": 55485 }
+  },
+  "projects": [
     {
-      "timestamp": "2026-03-28T16:30:01.200Z",
-      "level": "info",
-      "phase": "execute",
-      "action": "challenge_claim",
-      "toolCall": {
-        "tool": "llm_completion",
-        "input": { "claim": "The project has 500 active users." },
-        "output": { "outcome": "flagged", "type": "vague-metric" },
-        "durationMs": 1240
-      }
+      "name": "YayNay.wtf",
+      "confidence": 50,
+      "verified_claims": 4,
+      "flagged_claims": 4,
+      "hypercert_payload_cid": "bafkreicuxw7kjlpcrrfrn7tec3jezw6pczk3cka5jkxs4fvs5eezjb5qra",
+      "atproto_uri": "at://did:plc:fke3rhssj7rdghxee2t73x73/org.hypercerts.claim.activity/3micrma3y7k2h",
+      "hyperscan_url": "https://www.hyperscan.dev/data?did=did%3Aplc%3Afke3rhssj7rdghxee2t73x73&collection=org.hypercerts.claim.activity&rkey=3micrma3y7k2h"
     }
+  ],
+  "log": [
+    { "ts": "...", "level": "decision", "stage": "scout",       "message": "Targeting Devspot PL Genesis hackathon" },
+    { "ts": "...", "level": "tool_call","stage": "scout",       "message": "Calling runScoutAgent — scraping ecosystem page" },
+    { "ts": "...", "level": "decision", "stage": "adversarial", "message": "Plan: challenge every extracted claim — flag vague metrics, dead links, overclaiming" },
+    { "ts": "...", "level": "tool_call","stage": "adversarial", "message": "Calling runAdversarialAgent — LLM counter-evidence search + EIP-191 signing" },
+    { "ts": "...", "level": "success",  "stage": "synthesis",   "message": "Hypercerts stored: 3/3, ATProto published: 3" }
   ]
 }
 ```
 
-These logs are stored on Storacha alongside the adversarial receipt, forming a complete and replayable audit trail for every evaluation.
+`agent_log.json` is gitignored (runtime output). Generate it by running `pnpm test:pipeline`.
 
 ---
 

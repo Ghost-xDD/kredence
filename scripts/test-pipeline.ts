@@ -155,7 +155,8 @@ function stageEnd(name: keyof AgentLog["stages"], success: boolean) {
 }
 
 function saveLog() {
-  const logPath = resolve(__dirname, "agent_log.json");
+  // Write to project root so it sits next to agent.json
+  const logPath = resolve(__dirname, "../agent_log.json");
   writeFileSync(logPath, JSON.stringify(agentLog, null, 2), "utf-8");
 }
 
@@ -403,7 +404,7 @@ async function main() {
   });
 
   saveLog();
-  console.log(`\n  ✓ agent_log.json written → ${resolve(__dirname, "agent_log.json")}`);
+  console.log(`\n  ✓ agent_log.json written → ${resolve(__dirname, "../agent_log.json")}`);
 
   // ── Final Report ────────────────────────────────────────────────────────
   separator("Hypercert Payloads");
