@@ -1,0 +1,113 @@
+{
+  "schema": "https://eips.ethereum.org/EIPS/eip-8004#agent-manifest-v1",
+  "name": "Kredence Autonomous Impact Intelligence",
+  "version": "0.1.0",
+  "description": "End-to-end autonomous framework that discovers projects across funding ecosystems, gathers GitHub, web, and on-chain evidence, adversarially challenges every impact claim, and publishes verified hypercerts to the AT Protocol network.",
+  "homepage": "https://kredence.xyz",
+  "repository": "https://github.com/Ghost-xDD/kredence",
+
+  "operator": {
+    "name": "Kredence",
+    "wallet": "0x134e3dD08dbf085adE908c894aD137157c35aa48",
+    "chain": "eip155:84532",
+    "registry": "0x8004A818BFB912233c491871b3d84c89A494BD9e"
+  },
+
+  "agents": [
+    {
+      "role": "scout",
+      "name": "Kredence Scout Agent",
+      "agentId": 3040,
+      "erc8004": "eip155:84532:0x8004A818BFB912233c491871b3d84c89A494BD9e:3040",
+      "explorerUrl": "https://sepolia.basescan.org/token/0x8004A818BFB912233c491871b3d84c89A494BD9e?a=3040",
+      "description": "Discovers projects from funding ecosystems: Devspot, ETHGlobal, Filecoin Dev Grants, Gitcoin, Chainlink, Devfolio, Octant, or manual URL lists."
+    },
+    {
+      "role": "evidence",
+      "name": "Kredence Evidence Agent",
+      "agentId": 3041,
+      "erc8004": "eip155:84532:0x8004A818BFB912233c491871b3d84c89A494BD9e:3041",
+      "explorerUrl": "https://sepolia.basescan.org/token/0x8004A818BFB912233c491871b3d84c89A494BD9e?a=3041",
+      "description": "Collects GitHub signals, website evidence, and on-chain activity. Extracts structured impact claims via LLM analysis."
+    },
+    {
+      "role": "adversarial",
+      "name": "Kredence Adversarial Agent",
+      "agentId": 3042,
+      "erc8004": "eip155:84532:0x8004A818BFB912233c491871b3d84c89A494BD9e:3042",
+      "explorerUrl": "https://sepolia.basescan.org/token/0x8004A818BFB912233c491871b3d84c89A494BD9e?a=3042",
+      "description": "Challenges every extracted claim. Flags vague metrics, unverifiable attribution, dead links, and overclaiming. Signs adversarial logs with EIP-191."
+    },
+    {
+      "role": "synthesis",
+      "name": "Kredence Synthesis Agent",
+      "agentId": 3043,
+      "erc8004": "eip155:84532:0x8004A818BFB912233c491871b3d84c89A494BD9e:3043",
+      "explorerUrl": "https://sepolia.basescan.org/token/0x8004A818BFB912233c491871b3d84c89A494BD9e?a=3043",
+      "description": "Assembles the final hypercert payload from verified claims and adversarial output. Publishes records to ATProto (Hyperscan) and stores on Storacha with IPNS."
+    }
+  ],
+
+  "pipeline": {
+    "stages": ["scout", "evidence", "adversarial", "synthesis"],
+    "decisionLoop": "discover → plan → execute → verify → submit",
+    "humanInvolvement": "none after initial launch",
+    "selfCorrection": [
+      "Retries expired ATProto sessions with fresh JWT",
+      "Retries Redis writes on transient failures",
+      "Retries Storacha uploads on network errors",
+      "Falls back to IPNS if Redis is unavailable",
+      "Skips unparseable projects and continues the run"
+    ]
+  },
+
+  "tools": [
+    { "name": "Devspot scraper",          "type": "web-scraping",       "api": "https://devspot.app" },
+    { "name": "ETHGlobal scraper",         "type": "web-scraping",       "api": "https://ethglobal.com" },
+    { "name": "Gitcoin Grants API",        "type": "data-api",           "api": "https://grants-stack.gitcoin.co" },
+    { "name": "Filecoin Dev Grants",       "type": "github-api",         "api": "https://api.github.com" },
+    { "name": "GitHub REST API",           "type": "data-api",           "api": "https://api.github.com" },
+    { "name": "Storacha (IPFS)",           "type": "decentralised-storage", "api": "https://storacha.network" },
+    { "name": "AT Protocol (Hyperscan)",   "type": "decentralised-protocol", "api": "https://bsky.social/xrpc" },
+    { "name": "IPNS (W3Name)",             "type": "decentralised-naming", "api": "https://name.web3.storage" },
+    { "name": "EVM RPC (Base Sepolia)",    "type": "blockchain",         "chain": "eip155:84532" },
+    { "name": "EVM RPC (Ethereum)",        "type": "blockchain",         "chain": "eip155:1" },
+    { "name": "LLM (OpenAI / Gateway)",    "type": "ai-inference",       "models": ["gpt-4o", "gpt-4o-mini"] },
+    { "name": "ERC-8004 Identity Registry","type": "smart-contract",     "address": "0x8004A818BFB912233c491871b3d84c89A494BD9e" },
+    { "name": "ERC-8004 Reputation Registry","type":"smart-contract",    "address": "0x8004B663056A597Dffe9eCcC1965A193B7388713" },
+    { "name": "Upstash Redis",             "type": "key-value-store",    "api": "https://upstash.com" }
+  ],
+
+  "supportedTaskCategories": [
+    "ecosystem-discovery",
+    "impact-claim-extraction",
+    "adversarial-verification",
+    "hypercert-synthesis",
+    "on-chain-evidence-collection",
+    "decentralised-publishing",
+    "agent-identity-registration"
+  ],
+
+  "techStack": [
+    "TypeScript", "Node.js", "Next.js", "Express", "WebSocket",
+    "viem", "AT Protocol", "Storacha", "IPFS", "IPNS",
+    "ERC-8004", "EIP-191", "OpenAI API", "Upstash Redis"
+  ],
+
+  "computeConstraints": {
+    "maxProjectsPerRun": 10,
+    "maxLLMCallsPerProject": 12,
+    "maxRetries": 3,
+    "timeoutPerStageMs": 120000,
+    "storageCostModel": "Storacha free tier (5 GiB)"
+  },
+
+  "outputs": {
+    "evidenceBundleCid": "Storacha CID of collected evidence (JSON)",
+    "adversarialLogCid": "Storacha CID of signed adversarial log (JSON)",
+    "hypercertPayloadCid": "Storacha CID of final hypercert payload (JSON)",
+    "atprotoActivityUri": "AT Protocol URI of the published hypercert record",
+    "hyperscanUrl": "Public Hyperscan URL for the hypercert",
+    "agentLog": "agent_log.json — structured execution log for this run"
+  }
+}

@@ -14,7 +14,7 @@ out
 
 # logs
 *.log
-agent_log.json
+
 
 # OS
 .DS_Store

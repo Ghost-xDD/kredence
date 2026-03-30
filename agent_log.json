@@ -1,0 +1,415 @@
+{
+  "run_id": "run-1774911800825",
+  "started_at": "2026-03-30T23:03:20.825Z",
+  "finished_at": "2026-03-30T23:06:27.417Z",
+  "status": "completed",
+  "operator_wallet": "0x134e3dD08dbf085adE908c894aD137157c35aa48",
+  "agent_ids": {
+    "scout": 3040,
+    "evidence": 3041,
+    "adversarial": 3042,
+    "synthesis": 3043
+  },
+  "ecosystem": {
+    "kind": "devspot",
+    "url": "https://pl-genesis-frontiers-of-collaboration-hackathon.devspot.app/?activeTab=projects",
+    "max_projects": 3
+  },
+  "summary": {
+    "projects_discovered": 199,
+    "projects_selected": 3,
+    "evidence_bundles": 3,
+    "adversarial_logs": 3,
+    "hypercerts_stored": 3,
+    "atproto_published": 3,
+    "total_verified_claims": 13,
+    "total_flagged_claims": 10,
+    "duration_ms": 186592
+  },
+  "stages": {
+    "scout": {
+      "status": "completed",
+      "started_at": "2026-03-30T23:03:20.843Z",
+      "finished_at": "2026-03-30T23:04:00.730Z",
+      "duration_ms": 39887
+    },
+    "evidence": {
+      "status": "completed",
+      "started_at": "2026-03-30T23:04:00.730Z",
+      "finished_at": "2026-03-30T23:04:48.626Z",
+      "duration_ms": 47896
+    },
+    "adversarial": {
+      "status": "completed",
+      "started_at": "2026-03-30T23:04:48.626Z",
+      "finished_at": "2026-03-30T23:05:31.932Z",
+      "duration_ms": 43306
+    },
+    "synthesis": {
+      "status": "completed",
+      "started_at": "2026-03-30T23:05:31.932Z",
+      "finished_at": "2026-03-30T23:06:27.417Z",
+      "duration_ms": 55485
+    }
+  },
+  "projects": [
+    {
+      "name": "YayNay.wtf",
+      "confidence": 50,
+      "verified_claims": 4,
+      "flagged_claims": 4,
+      "open_questions": 0,
+      "evidence_bundle_cid": "bafkreibyywcsvpi6wzzrcbk45syf7qpym33ghctskz44uus2kokojyt2h4",
+      "adversarial_log_cid": "bafkreifdipblkncv5uxdigzql44br4nu6g4tmkk6nrsmxlvnlz4bhu64ty",
+      "hypercert_payload_cid": "bafkreicuxw7kjlpcrrfrn7tec3jezw6pczk3cka5jkxs4fvs5eezjb5qra",
+      "atproto_uri": "at://did:plc:fke3rhssj7rdghxee2t73x73/org.hypercerts.claim.activity/3micrma3y7k2h",
+      "hyperscan_url": "https://www.hyperscan.dev/data?did=did%3Aplc%3Afke3rhssj7rdghxee2t73x73&collection=org.hypercerts.claim.activity&rkey=3micrma3y7k2h",
+      "sources": [
+        "https://pl-genesis-frontiers-of-collaboration-hackathon.devspot.app/projects/560",
+        "https://github.com/willyogo/yayornay",
+        "https://www.yaynay.wtf"
+      ]
+    },
+    {
+      "name": "Safenote",
+      "confidence": 56,
+      "verified_claims": 5,
+      "flagged_claims": 4,
+      "open_questions": 0,
+      "evidence_bundle_cid": "bafkreiggenuizct62eqa36ahidq52fokm5lmnrqm7oqbbldql5nchng2bm",
+      "adversarial_log_cid": "bafkreia5abtrnxrng34p333sepz2wmfe2rynwjfmnbk2fbjstydm67lkym",
+      "hypercert_payload_cid": "bafkreicfhdf47k4ld4w63a5q4trovcbbo4vntv4dxf25nqrnvelf4znvke",
+      "atproto_uri": "at://did:plc:fke3rhssj7rdghxee2t73x73/org.hypercerts.claim.activity/3micrmbeun42u",
+      "hyperscan_url": "https://www.hyperscan.dev/data?did=did%3Aplc%3Afke3rhssj7rdghxee2t73x73&collection=org.hypercerts.claim.activity&rkey=3micrmbeun42u",
+      "sources": [
+        "https://pl-genesis-frontiers-of-collaboration-hackathon.devspot.app/projects/590",
+        "https://github.com/codeaashu/safenote",
+        "https://www.safenote.me/"
+      ]
+    },
+    {
+      "name": "ZKMarket",
+      "confidence": 61,
+      "verified_claims": 4,
+      "flagged_claims": 2,
+      "open_questions": 3,
+      "evidence_bundle_cid": "bafkreihj63cb5ttkgd7vrapsutptprki4typfmshmofiyxq5jqcfa3qfty",
+      "adversarial_log_cid": "bafkreiewhkqzv273526djydofzxzt2knhxghpyqo2m77cn2pk3vtcglkh4",
+      "hypercert_payload_cid": "bafkreiecb675eb53hq7vkvowefxr53cydwuu6hj3i7sfgg6y6dl3oelsie",
+      "atproto_uri": "at://did:plc:fke3rhssj7rdghxee2t73x73/org.hypercerts.claim.activity/3micrm7y5vt2j",
+      "hyperscan_url": "https://www.hyperscan.dev/data?did=did%3Aplc%3Afke3rhssj7rdghxee2t73x73&collection=org.hypercerts.claim.activity&rkey=3micrm7y5vt2j",
+      "sources": [
+        "https://pl-genesis-frontiers-of-collaboration-hackathon.devspot.app/projects/592",
+        "https://github.com/dotunv/zkmarket",
+        "https://zkmarket.vercel.app/"
+      ]
+    }
+  ],
+  "log": [
+    {
+      "ts": "2026-03-30T23:03:20.843Z",
+      "level": "info",
+      "stage": "system",
+      "message": "Pipeline initialised",
+      "data": {
+        "run_id": "run-1774911800825",
+        "operator": "0x134e3dD08dbf085adE908c894aD137157c35aa48",
+        "agent_ids": {
+          "scout": 3040,
+          "evidence": 3041,
+          "adversarial": 3042,
+          "synthesis": 3043
+        }
+      }
+    },
+    {
+      "ts": "2026-03-30T23:03:20.843Z",
+      "level": "info",
+      "stage": "scout",
+      "message": "Stage started"
+    },
+    {
+      "ts": "2026-03-30T23:03:20.843Z",
+      "level": "decision",
+      "stage": "scout",
+      "message": "Targeting Devspot PL Genesis hackathon",
+      "data": {
+        "url": "https://pl-genesis-frontiers-of-collaboration-hackathon.devspot.app/?activeTab=projects"
+      }
+    },
+    {
+      "ts": "2026-03-30T23:03:20.843Z",
+      "level": "tool_call",
+      "stage": "scout",
+      "message": "Calling runScoutAgent — scraping ecosystem page"
+    },
+    {
+      "ts": "2026-03-30T23:04:00.729Z",
+      "level": "success",
+      "stage": "scout",
+      "message": "Discovered 199 projects",
+      "data": {
+        "storachaCid": "bafkreiaqrum3kdounfng33wqajcm2qyklrzkgbilbk4ua5oyayopqechs4"
+      }
+    },
+    {
+      "ts": "2026-03-30T23:04:00.729Z",
+      "level": "decision",
+      "stage": "scout",
+      "message": "Filtering to projects with GitHub + website sources (max 3)"
+    },
+    {
+      "ts": "2026-03-30T23:04:00.730Z",
+      "level": "info",
+      "stage": "scout",
+      "message": "Selected 3 projects",
+      "data": {
+        "projects": [
+          {
+            "name": "YayNay.wtf",
+            "sources": [
+              "submission-page",
+              "github",
+              "website"
+            ]
+          },
+          {
+            "name": "Safenote",
+            "sources": [
+              "submission-page",
+              "github",
+              "website"
+            ]
+          },
+          {
+            "name": "ZKMarket",
+            "sources": [
+              "submission-page",
+              "github",
+              "website"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "ts": "2026-03-30T23:04:00.730Z",
+      "level": "success",
+      "stage": "scout",
+      "message": "Stage completed in 39887ms"
+    },
+    {
+      "ts": "2026-03-30T23:04:00.730Z",
+      "level": "info",
+      "stage": "evidence",
+      "message": "Stage started"
+    },
+    {
+      "ts": "2026-03-30T23:04:00.730Z",
+      "level": "decision",
+      "stage": "evidence",
+      "message": "Plan: collect GitHub signals, website signals, on-chain activity per project"
+    },
+    {
+      "ts": "2026-03-30T23:04:00.730Z",
+      "level": "tool_call",
+      "stage": "evidence",
+      "message": "Calling runEvidenceAgent — GitHub API, web scraping, LLM claim extraction"
+    },
+    {
+      "ts": "2026-03-30T23:04:48.626Z",
+      "level": "success",
+      "stage": "evidence",
+      "message": "Evidence bundles stored: 3/3",
+      "data": {
+        "projects": [
+          {
+            "name": "YayNay.wtf",
+            "claims": 8,
+            "cid": "bafkreibyywcsvpi6wzzrcbk45syf7qpym33ghctskz44uus2kokojyt2h4"
+          },
+          {
+            "name": "Safenote",
+            "claims": 9,
+            "cid": "bafkreiggenuizct62eqa36ahidq52fokm5lmnrqm7oqbbldql5nchng2bm"
+          },
+          {
+            "name": "ZKMarket",
+            "claims": 9,
+            "cid": "bafkreihj63cb5ttkgd7vrapsutptprki4typfmshmofiyxq5jqcfa3qfty"
+          }
+        ]
+      }
+    },
+    {
+      "ts": "2026-03-30T23:04:48.626Z",
+      "level": "success",
+      "stage": "evidence",
+      "message": "Stage completed in 47896ms"
+    },
+    {
+      "ts": "2026-03-30T23:04:48.626Z",
+      "level": "info",
+      "stage": "adversarial",
+      "message": "Stage started"
+    },
+    {
+      "ts": "2026-03-30T23:04:48.626Z",
+      "level": "decision",
+      "stage": "adversarial",
+      "message": "Plan: challenge every extracted claim — flag vague metrics, dead links, overclaiming"
+    },
+    {
+      "ts": "2026-03-30T23:04:48.626Z",
+      "level": "tool_call",
+      "stage": "adversarial",
+      "message": "Calling runAdversarialAgent — LLM counter-evidence search + EIP-191 signing"
+    },
+    {
+      "ts": "2026-03-30T23:05:31.932Z",
+      "level": "success",
+      "stage": "adversarial",
+      "message": "Adversarial logs stored: 3/3",
+      "data": {
+        "total_verified": 13,
+        "total_flagged": 10,
+        "projects": [
+          {
+            "name": "Safenote",
+            "verified": 5,
+            "flagged": 4,
+            "confidence": "56%",
+            "cid": "bafkreia5abtrnxrng34p333sepz2wmfe2rynwjfmnbk2fbjstydm67lkym",
+            "signed": true
+          },
+          {
+            "name": "ZKMarket",
+            "verified": 4,
+            "flagged": 2,
+            "confidence": "61%",
+            "cid": "bafkreiewhkqzv273526djydofzxzt2knhxghpyqo2m77cn2pk3vtcglkh4",
+            "signed": true
+          },
+          {
+            "name": "YayNay.wtf",
+            "verified": 4,
+            "flagged": 4,
+            "confidence": "50%",
+            "cid": "bafkreifdipblkncv5uxdigzql44br4nu6g4tmkk6nrsmxlvnlz4bhu64ty",
+            "signed": true
+          }
+        ]
+      }
+    },
+    {
+      "ts": "2026-03-30T23:05:31.932Z",
+      "level": "success",
+      "stage": "adversarial",
+      "message": "Stage completed in 43306ms"
+    },
+    {
+      "ts": "2026-03-30T23:05:31.932Z",
+      "level": "info",
+      "stage": "synthesis",
+      "message": "Stage started"
+    },
+    {
+      "ts": "2026-03-30T23:05:31.932Z",
+      "level": "decision",
+      "stage": "synthesis",
+      "message": "Plan: assemble hypercert payloads, store on Storacha, publish to ATProto"
+    },
+    {
+      "ts": "2026-03-30T23:05:31.932Z",
+      "level": "tool_call",
+      "stage": "synthesis",
+      "message": "Calling runSynthesisAgent — payload assembly + Storacha upload + ATProto publish"
+    },
+    {
+      "ts": "2026-03-30T23:06:27.417Z",
+      "level": "success",
+      "stage": "synthesis",
+      "message": "Hypercerts stored: 3/3, ATProto published: 3",
+      "data": {
+        "projects": [
+          {
+            "name": "YayNay.wtf",
+            "confidence": 50,
+            "verified_claims": 4,
+            "flagged_claims": 4,
+            "open_questions": 0,
+            "evidence_bundle_cid": "bafkreibyywcsvpi6wzzrcbk45syf7qpym33ghctskz44uus2kokojyt2h4",
+            "adversarial_log_cid": "bafkreifdipblkncv5uxdigzql44br4nu6g4tmkk6nrsmxlvnlz4bhu64ty",
+            "hypercert_payload_cid": "bafkreicuxw7kjlpcrrfrn7tec3jezw6pczk3cka5jkxs4fvs5eezjb5qra",
+            "atproto_uri": "at://did:plc:fke3rhssj7rdghxee2t73x73/org.hypercerts.claim.activity/3micrma3y7k2h",
+            "hyperscan_url": "https://www.hyperscan.dev/data?did=did%3Aplc%3Afke3rhssj7rdghxee2t73x73&collection=org.hypercerts.claim.activity&rkey=3micrma3y7k2h",
+            "sources": [
+              "https://pl-genesis-frontiers-of-collaboration-hackathon.devspot.app/projects/560",
+              "https://github.com/willyogo/yayornay",
+              "https://www.yaynay.wtf"
+            ]
+          },
+          {
+            "name": "Safenote",
+            "confidence": 56,
+            "verified_claims": 5,
+            "flagged_claims": 4,
+            "open_questions": 0,
+            "evidence_bundle_cid": "bafkreiggenuizct62eqa36ahidq52fokm5lmnrqm7oqbbldql5nchng2bm",
+            "adversarial_log_cid": "bafkreia5abtrnxrng34p333sepz2wmfe2rynwjfmnbk2fbjstydm67lkym",
+            "hypercert_payload_cid": "bafkreicfhdf47k4ld4w63a5q4trovcbbo4vntv4dxf25nqrnvelf4znvke",
+            "atproto_uri": "at://did:plc:fke3rhssj7rdghxee2t73x73/org.hypercerts.claim.activity/3micrmbeun42u",
+            "hyperscan_url": "https://www.hyperscan.dev/data?did=did%3Aplc%3Afke3rhssj7rdghxee2t73x73&collection=org.hypercerts.claim.activity&rkey=3micrmbeun42u",
+            "sources": [
+              "https://pl-genesis-frontiers-of-collaboration-hackathon.devspot.app/projects/590",
+              "https://github.com/codeaashu/safenote",
+              "https://www.safenote.me/"
+            ]
+          },
+          {
+            "name": "ZKMarket",
+            "confidence": 61,
+            "verified_claims": 4,
+            "flagged_claims": 2,
+            "open_questions": 3,
+            "evidence_bundle_cid": "bafkreihj63cb5ttkgd7vrapsutptprki4typfmshmofiyxq5jqcfa3qfty",
+            "adversarial_log_cid": "bafkreiewhkqzv273526djydofzxzt2knhxghpyqo2m77cn2pk3vtcglkh4",
+            "hypercert_payload_cid": "bafkreiecb675eb53hq7vkvowefxr53cydwuu6hj3i7sfgg6y6dl3oelsie",
+            "atproto_uri": "at://did:plc:fke3rhssj7rdghxee2t73x73/org.hypercerts.claim.activity/3micrm7y5vt2j",
+            "hyperscan_url": "https://www.hyperscan.dev/data?did=did%3Aplc%3Afke3rhssj7rdghxee2t73x73&collection=org.hypercerts.claim.activity&rkey=3micrm7y5vt2j",
+            "sources": [
+              "https://pl-genesis-frontiers-of-collaboration-hackathon.devspot.app/projects/592",
+              "https://github.com/dotunv/zkmarket",
+              "https://zkmarket.vercel.app/"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "ts": "2026-03-30T23:06:27.417Z",
+      "level": "success",
+      "stage": "synthesis",
+      "message": "Stage completed in 55485ms"
+    },
+    {
+      "ts": "2026-03-30T23:06:27.417Z",
+      "level": "success",
+      "stage": "system",
+      "message": "Pipeline complete in 186.6s",
+      "data": {
+        "summary": {
+          "projects_discovered": 199,
+          "projects_selected": 3,
+          "evidence_bundles": 3,
+          "adversarial_logs": 3,
+          "hypercerts_stored": 3,
+          "atproto_published": 3,
+          "total_verified_claims": 13,
+          "total_flagged_claims": 10,
+          "duration_ms": 186592
+        }
+      }
+    }
+  ]
+}
