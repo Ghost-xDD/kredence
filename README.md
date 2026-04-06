@@ -1,10 +1,11 @@
+[![Kredence](https://img.shields.io/endpoint?url=https%3A%2F%2Fcredenceserver-production.up.railway.app%2Fbadge%2Fghost-xdd-kredence)](https://kredence.xyz/project/ghost-xdd-kredence)
+
 # Kredence
 
 **Autonomous impact intelligence. No forms. No summaries. Just evidence.**
 
 Kredence is a multi-agent system that discovers projects in a funding ecosystem, collects real evidence from GitHub, onchain activity, and deployments, adversarially challenges every impact claim, and produces continuously-updated hypercerts — without asking anyone to submit anything.
 
-[![Kredence](https://img.shields.io/endpoint?url=https%3A%2F%2Fcredenceserver-production.up.railway.app%2Fbadge%2Fsafenote)](https://kredence.xyz)
 [![npm](https://img.shields.io/npm/v/kredence)](https://npmjs.com/package/kredence)
 [![docs](https://img.shields.io/badge/docs-docs.kredence.xyz-blue)](https://docs.kredence.xyz)
 
